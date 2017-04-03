@@ -1,15 +1,15 @@
-#==--- Pixel/CMakeLists.txt ------------------------------------------------==#
+#==--- Utility/CMakeLists.txt ------------------------------------------------==#
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.4)
-PROJECT(Pixel)
+PROJECT(Utility)
 
 #==--- Versioning ----------------------------------------------------------==#
 
-SET(Pixel_MAJOR_VERSION 0)
-SET(Pixel_MINOR_VERSION 1)
-SET(Pixel_PATCH_VERSION 0)
-SET(Pixel_VERSION
-  ${Pixel_MAJOR_VERSION}.${Pixel_MINOR_VERSION}.${Pixel_PATCH_VERSION}
+SET(Utility_MAJOR_VERSION 0)
+SET(Utility_MINOR_VERSION 1)
+SET(Utility_PATCH_VERSION 0)
+SET(Utility_VERSION
+  ${Utility_MAJOR_VERSION}.${Utility_MINOR_VERSION}.${Utility_PATCH_VERSION}
 )
 
 #==--- Build Type ----------------------------------------------------------==#
@@ -28,14 +28,14 @@ ENDIF(WIN32)
 
 #==--- Commandline Options -------------------------------------------------==#
 
-OPTION(Pixel_HEADER_INSTALL_DIR  
-  "Pixel header installation directory" ${Pixel_ROOT}/include/Pixel/)
-OPTION(Pixel_LIB_INSTALL_DIR  
-  "Pixel library installation directory" ${Pixel_ROOT}/lib/)
+OPTION(Utility_HEADER_INSTALL_DIR  
+  "Utility header installation directory" ${Pixel_ROOT}/include/Pixel/)
+OPTION(Utility_LIB_INSTALL_DIR  
+  "Utility library installation directory" ${Pixel_ROOT}/lib/)
 
 #==--- Include directories -------------------------------------------------==#
 
-INCLUDE_DIRECTORIES(${Pixel_SOURCE_DIR}/Include 
+INCLUDE_DIRECTORIES(${Utility_SOURCE_DIR}/Include 
                     ${Pixel_ROOT}/include       )
 
 #==--- Subdirectories ------------------------------------------------------==#
@@ -87,19 +87,19 @@ SET(TESTS_STRING)
 
 #==--- Install -------------------------------------------------------------==#
 
-INSTALL(DIRECTORY ${Pixel_SOURCE_DIR}/Include/Pixel
-        DESTINATION ${Pixel_HEADER_INSTALL_DIR})
+INSTALL(DIRECTORY ${Utility_SOURCE_DIR}/Include/Pixel
+        DESTINATION ${Utility_HEADER_INSTALL_DIR})
 
 #==--- Print Configuration -------------------------------------------------==#
 
 MESSAGE("|==--- CONFIGURATION --------------------------------------------==|")
-MESSAGE("| PIXEL VERSION           : ${Pixel_VERSION}"                        )
+MESSAGE("| UTILITY VERSION         : ${Utility_VERSION}"                      )
 MESSAGE("| BUILD TYPE              : ${CMAKE_BUILD_TYPE}"                     )
 MESSAGE("| CMAKE_CXX_FLAGS_RELEASE : ${CMAKE_CXX_FLAGS_RELEASE}"              )
 MESSAGE("| CMAKE_CXX_FLAGS_DEBUG   : ${CMAKE_CXX_FLAGS_DEBUG}"                )
 MESSAGE("| CMAKE_CXX_FLAGS         : ${CMAKE_CXX_FLAGS}"                      )
-MESSAGE("| HEADER INSTALL DIR      : ${Pixel_HEADER_INSTALL_DIR}"             )
-MESSAGE("| LIB INSTALL DIR         : ${Pixel_LIB_INSTALL_DIR}"                )
+MESSAGE("| HEADER INSTALL DIR      : ${Utility_HEADER_INSTALL_DIR}"           )
+MESSAGE("| LIB INSTALL DIR         : ${Utility_LIB_INSTALL_DIR}"              )
 MESSAGE("| GENERATE ASSEMBLY       : ${GENERATE_ASM}"                         )
 MESSAGE("| TESTS                   : ${TESTS_STRING}"                         )
 MESSAGE("|==--------------------------------------------------------------==|")

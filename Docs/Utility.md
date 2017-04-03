@@ -1,4 +1,4 @@
-Welcome to the main page for Pixel's base library.
+Welcome to the main page for Pixel's utility library.
 
 This library contains general purpose functionality that is used throughout
 Pixel code. Most code in this library is code which was initially implemented

@@ -1,2 +1,3 @@
-# Pixel
-Base functionality for all libraries.
+# Utility
+
+Utility functionality for the Pixel libraries.
