@@ -1,4 +1,4 @@
-#==--- Pixel/Docs/CMakeLists.txt -------------------------------------------==#
+#==--- Utility/Docs/CMakeLists.txt -----------------------------------------==#
 
 FIND_PACKAGE(Doxygen QUIET)
 
@@ -16,7 +16,7 @@ IF (DOXYGEN_FOUND)
   )
 
   INSTALL(DIRECTORY   ${CMAKE_CURRENT_BINARY_DIR}/html 
-          DESTINATION ${Pulley_SOURCE_DIR}/Bin/Docs/)
+          DESTINATION ${Utility_SOURCE_DIR}/Bin/Docs/)
 ENDIF(DOXYGEN_FOUND)
 
 #==-------------------------------------------------------------------------==#

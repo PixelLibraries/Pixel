@@ -1,6 +1,6 @@
 //==--- Utility/Utility/Portability.hpp ------------------- -*- C++ -*- ---==//
 //            
-//                                Pixel : Utility 
+//                                Voxel : Utility 
 //
 //                        Copyright (c) 2017 Rob Clucas
 //  
@@ -14,8 +14,8 @@
 //
 //==-----------------------------------------------------------------------==//
 
-#ifndef PIXEL_UTILITY_UTILITY_PORTABILITY_HPP
-#define PIXEL_UTILITY_UTILTIY_PORTABILITY_HPP
+#ifndef VOXEL_UTILITY_UTILITY_PORTABILITY_HPP
+#define VOXEL_UTILITY_UTILTIY_PORTABILITY_HPP
 
 #if defined(__CUDA_ARCH__)
 
@@ -39,14 +39,14 @@
 #include <cuda_runtime.h>
 
 /// Definition for host, device, and host device functions.
-#if defined(__CUDACC__)  || defined(__clang__)  // GPU Environment, or clang:
-# define HOST        __host__
-# define DEVICE      __device__
-# define DEVICE_HOST __host__ __device__
-#else                                           // Non-GPU Environment:
-# define HOST
-# define DEVICE
-# define DEVICE_HOST
+#if defined(__CUDACC__) || defined(__clang__)  // GPU Environment, or clang:
+# define VoxxHost       __host__
+# define VoxxDevice     __device__
+# define VoxxDeviceHost __device__ __host__
+#else                                          // Non-GPU Environment:
+# define VoxxHost
+# define VoxxDevice
+# define VoxxDeviceHost
 #endif 
 
-#endif // PIXEL_UTILITY_UTILITY_PORTABILITY_HPP
+#endif // VOXEL_UTILITY_UTILITY_PORTABILITY_HPP

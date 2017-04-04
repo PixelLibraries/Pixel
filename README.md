@@ -1,3 +1,3 @@
 # Utility
 
-Utility functionality for the Pixel libraries.
+Utility functionality for the Voxel libraries.

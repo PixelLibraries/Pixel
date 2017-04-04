@@ -3,7 +3,7 @@
 #==--- DoxyFormat/FetchFiles.sh --------------------------------------------==#
 #
 # File        : FetchFiles.sh
-# Description : Fetches the files required for formatting Pixel's Doxygen
+# Description : Fetches the files required for formatting Vocels's Doxygen
 #               documentation.
 #
 #==-------------------------------------------------------------------------==#
@@ -14,7 +14,7 @@ def git(*args):
   return subprocess.check_call(['git'] + list(args))
 
 baseUrl =\
-  'https://raw.githubusercontent.com/PixelTechnologies/DoxyFormat/master/'
+  'https://raw.githubusercontent.com/Voxelated/DoxyFormat/master/'
 
 urls = {
   'stylesheet'  : 'Css/pixel.css'     ,

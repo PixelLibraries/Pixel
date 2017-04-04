@@ -1,6 +1,6 @@
 //==--- Utility/Utility/Debug.hpp ------------------------- -*- C++ -*- ---==//
 //            
-//                                Pixel : Utility 
+//                                Voxel : Utility 
 //
 //                        Copyright (c) 2017 Rob Clucas
 //  
@@ -13,8 +13,8 @@
 //
 //==-----------------------------------------------------------------------==//
 
-#ifndef PIXEL_UTILITY_UTILITY_DEBUG_HPP
-#define PIXEL_UTILITY_UTILITY_DEBUG_HPP
+#ifndef VOXEL_UTILITY_UTILITY_DEBUG_HPP
+#define VOXEL_UTILITY_UTILITY_DEBUG_HPP
 
 #include "Portability.hpp"
 
@@ -22,9 +22,9 @@
 // Release mode definitions
 
 /// Macro to check for Cuda call errors.
-#define CudaErrorCheck(result)
+#define VoxxCudaErrorCheck(result)
 /// Macro to assert a condition.
-#define PixAssert(condition, message)
+#define VoxxAssert(condition, message)
 
 #else
 // Debug mode definitions:
@@ -33,14 +33,14 @@
 #include <iostream>
 
 /// Macro to check for Cuda call errors, when in debug mode.
-#define CudaErrorCheck(result) {                                              \
-  Pix::checkCudaError((result), __FILE__, __LINE__); }
+#define VoxxCudaErrorCheck(result) {                                          \
+  Voxx::checkCudaError((result), __FILE__, __LINE__); }
 
 /// Macro to assert a condition.
-#define PixAssert(condition, message)                                         \
+#define VoxxAssert(condition, message)                                        \
   assert(condition && message)
 
-namespace Pix {
+namespace Voxx {
 
 /// Checks if a cude error code was a success, and if not, then it prints
 /// the error message.
@@ -56,7 +56,7 @@ inline void checkCudaError(cudaError_t code, const char* file, int line) {
    }
 }
 
-} // namespace Pix
+} // namespace Voxx
 
 #endif // NDEBUG
-#endif // PIXEL_UTILITY_UTILITY_DEBUG_HPP
+#endif // VOXEL_UTILITY_UTILITY_DEBUG_HPP
