@@ -15,7 +15,7 @@
 //==------------------------------------------------------------------------==//
 
 #ifndef VOXEL_UTILITY_PORTABILITY_HPP
-#define VOXEL_UTILTIY_PORTABILITY_HPP
+#define VOXEL_UTILITY_PORTABILITY_HPP
 
 #if defined(__CUDA_ARCH__)
 
