@@ -1,4 +1,4 @@
-//==--- Utility/Utility/Portability.hpp ------------------- -*- C++ -*- ---==//
+//==--- Utility/Portability.hpp ---------------------------- -*- C++ -*- ---==//
 //            
 //                                Voxel : Utility 
 //
@@ -6,16 +6,16 @@
 //  
 //  This file is distributed under the MIT License. See LICENSE for details.
 //
-//==-----------------------------------------------------------------------==//
+//==------------------------------------------------------------------------==//
 //
 /// \file  Portability.hpp
 /// \brief This file defines macros to allow correct compilation for host and
 ///        device code.
 //
-//==-----------------------------------------------------------------------==//
+//==------------------------------------------------------------------------==//
 
-#ifndef VOXEL_UTILITY_UTILITY_PORTABILITY_HPP
-#define VOXEL_UTILITY_UTILTIY_PORTABILITY_HPP
+#ifndef VOXEL_UTILITY_PORTABILITY_HPP
+#define VOXEL_UTILTIY_PORTABILITY_HPP
 
 #if defined(__CUDA_ARCH__)
 
@@ -49,4 +49,4 @@
 # define VoxxDeviceHost
 #endif 
 
-#endif // VOXEL_UTILITY_UTILITY_PORTABILITY_HPP
+#endif // VOXEL_UTILITY_PORTABILITY_HPP

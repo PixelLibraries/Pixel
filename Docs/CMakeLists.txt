@@ -14,9 +14,6 @@ IF (DOXYGEN_FOUND)
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} 
     COMMENT "Generate doxygen documentation"
   )
-
-  INSTALL(DIRECTORY   ${CMAKE_CURRENT_BINARY_DIR}/html 
-          DESTINATION ${Utility_SOURCE_DIR}/Bin/Docs/)
 ENDIF(DOXYGEN_FOUND)
 
 #==-------------------------------------------------------------------------==#

@@ -1,4 +1,4 @@
-//==--- Utility/Utility/Debug.hpp ------------------------- -*- C++ -*- ---==//
+//==--- Utility/Debug.hpp ---------------------------------- -*- C++ -*- ---==//
 //            
 //                                Voxel : Utility 
 //
@@ -6,15 +6,15 @@
 //  
 //  This file is distributed under the MIT License. See LICENSE for details.
 //
-//==-----------------------------------------------------------------------==//
+//==------------------------------------------------------------------------==//
 //
 /// \file  Debug.hpp
 /// \brief This file defines debugging functionality.
 //
-//==-----------------------------------------------------------------------==//
+//==------------------------------------------------------------------------==//
 
-#ifndef VOXEL_UTILITY_UTILITY_DEBUG_HPP
-#define VOXEL_UTILITY_UTILITY_DEBUG_HPP
+#ifndef VOXEL_UTILITY_DEBUG_HPP
+#define VOXEL_UTILITY_DEBUG_HPP
 
 #include "Portability.hpp"
 
@@ -59,4 +59,4 @@ inline void checkCudaError(cudaError_t code, const char* file, int line) {
 } // namespace Voxx
 
 #endif // NDEBUG
-#endif // VOXEL_UTILITY_UTILITY_DEBUG_HPP
+#endif // VOXEL_UTILITY_DEBUG_HPP
