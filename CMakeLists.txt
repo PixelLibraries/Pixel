@@ -22,16 +22,28 @@ ENDIF(NOT CMAKE_BUILD_TYPE)
 
 OPTION(VOXEL_ROOT "Path to Voxel root directory")
 
+SET(CMAKE_CXX_COMPILER clang++-5)
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${Utility_SOURCE_DIR}/CMake")
+INCLUDE(VoxxSystemInfo)
+
+#==--- Packages -------------------------------------------------------------==#
+
+FIND_PACKAGE(CUDA)
+IF(CUDA_FOUND)
+  ADD_DEFINITIONS(-DVoxxCudaSupported)
+  SET(CXX_CUDA_FLAGS "-Xcuda-ptxas -v")
+ENDIF(CUDA_FOUND)
+
 #==--- Compiler Flags -------------------------------------------------------==#
 
 IF(WIN32)
   SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2")
   SET(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} /O2"  )
 ELSE()
-  SET(FLAGS        "-std=c++1z -O3"                                    )
-  SET(DEBUG_FLAGS  "${FLAGS} -Wall -Wextra -Wpedantic -Xcuda-ptxas -v" )
-  SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${FLAGS}"    )
-  SET(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} ${DEBUG_FLAGS}")
+  SET(FLAGS        "-std=c++1z -O3"                                     )
+  SET(DEBUG_FLAGS  "${FLAGS} -Wall -Wextra -Wpedantic ${CXX_CUDA_FLAGS}")
+  SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${FLAGS}"     )
+  SET(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} ${DEBUG_FLAGS}" )
 ENDIF()
 
 #==--- Set CXXFLAGS ---------------------------------------------------------==#
@@ -43,14 +55,6 @@ ELSE()
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_DEBUG}"
       CACHE STRING "CXX FLAGS" FORCE)
 ENDIF()
-
-#==--- Google Test/Mock -----------------------------------------------------==#
-
-FIND_PACKAGE(GTest)
-
-#==--- Subdirectories -------------------------------------------------------==#
-
-ADD_SUBDIRECTORY(Docs)
 
 #==--- Install --------------------------------------------------------------==#
 
@@ -72,9 +76,13 @@ ENDIF()
 INSTALL(DIRECTORY ${Utility_SOURCE_DIR}/Include/Voxel/Utility
         DESTINATION ${CMAKE_INSTALL_PREFIX}/include/Voxel)
 
-#==--- Include directories --------------------------------------------------==#
+#==--- Subdirectories -------------------------------------------------------==#
 
-INCLUDE_DIRECTORIES(${Utility_SOURCE_DIR}/Include ${VOXEL_ROOT}/include)
+ADD_SUBDIRECTORY(Cmake)
+ADD_SUBDIRECTORY(Docs)
+ADD_SUBDIRECTORY(Src)
+
+#VOXX_SYSTEM_INFO()
 
 #==--- Print Configuration --------------------------------------------------==#
 
@@ -86,5 +94,9 @@ MESSAGE("| CMAKE_CXX_FLAGS_DEBUG   : ${CMAKE_CXX_FLAGS_DEBUG}"                )
 MESSAGE("| CMAKE_CXX_FLAGS         : ${CMAKE_CXX_FLAGS}"                      )
 MESSAGE("| CMAKE_INSTALL_PREFIX    : ${CMAKE_INSTALL_PREFIX}"                 )
 MESSAGE("| VOXEL_ROOT              : ${VOXEL_ROOT}"                           )
-MESSAGE("| GTEST FOUND             : ${GTEST_FOUND}"                          )
+MESSAGE("| CUDA SUPPORTED          : ${CUDA_FOUND}"                           )
+MESSAGE("| CUDA ROOT               : ${CUDA_TOOLKIT_ROOT_DIR}"                )
+MESSAGE("| PHYSICAL CORES          : ${VOXX_PHYSICAL_CORES}"                  )
+MESSAGE("| LOGICAL CORES           : ${VOXX_LOGICAL_CORES}"                   )
+MESSAGE("| CACHELINE SIZE          : ${VOXX_CACHELINE_SIZE}"                  )
 MESSAGE("|==--------------------------------------------------------------==|")

@@ -18,13 +18,19 @@
 
 #include "Portability.hpp"
 
-#ifdef NDEBUG
+#if defined(NDEBUG)
 // Release mode definitions
 
-/// Macro to check for Cuda call errors.
-#define VoxxCudaErrorCheck(result)
 /// Macro to assert a condition.
 #define VoxxAssert(condition, message)
+
+#if !defined(VoxxCudaSupported)
+// If cuda is not supported, remove all error checks.
+# define VoxxCudaErrorCheck(result)
+#else
+// If cuda is supported, just evaluate the expression.
+# define VoxxCudaErrorCheck(result) (result)
+#endif // VoxxCudaErrorCheck
 
 #else
 // Debug mode definitions:
