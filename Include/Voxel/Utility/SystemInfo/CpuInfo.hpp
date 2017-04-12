@@ -17,253 +17,181 @@
 
 #include <Voxel/Utility/Bitwise.hpp>
 #include <Voxel/Utility/Algorithm/Algorithm.hpp>
-#include <cstdio>
+#include <Voxel/Utility/Io/IoFwd.hpp>
 #include <string>
-
-#if   defined(__APPLE__)
-# include <sys/sysctl.h>
-#elif defined(WIN32)
-#elif defined(linux)
-#else
-# error Unsupported Platform
-#endif
 
 namespace Voxx    { 
 namespace Utility {
+namespace System  {
 
 /// Defines vector instruction support for the CPU.
-enum CpuIntrinsic : uint8_t {
-  Avx2    = 0x00,
-  Avx1    = 0x01,
-  Sse42   = 0x02,
-  Sse41   = 0x03,
-  Ssse3   = 0x04,
-  Sse3    = 0x05,
-  Sse2    = 0x06,
-  Sse     = 0x07,
-  Neon    = 0x08,
-  Invalid = 0x09
-};
+enum class IntrinsicSet : uint8_t {
+  Avx2    = 0x00,   //!< Intel AVX  2.0 instructions.
+  Avx1    = 0x01,   //!< Intel AVX  1.0 instructions.
+  Sse42   = 0x02,   //!< Intel SSE  4.2 instructions.
+  Sse41   = 0x03,   //!< Intel SSE  4.1 instructions.
+  Ssse3   = 0x04,   //!< Intel SSSE 3.0 instructions.
+  Sse3    = 0x05,   //!< Intel SSE  3.0 instructions.
+  Sse2    = 0x06,   //!< Intel SSE  2.0 instructions.
+  Sse     = 0x07,   //!< Intel SSE  1.0 instructions.
+  Neon    = 0x08,   //!< Arm Neon instructions.
+  Invalid = 0x09    //!< Invalid intrinsic set.
+};  
 
-/// Gets the a struct representing the name and version of the intrinsics.
-static auto 
-printableIntrinsicInfo(uint8_t intrinsic) -> std::pair<const char*, float> {
-  switch (intrinsic) {
-    case CpuIntrinsic::Avx2 : return std::make_pair("Avx"    , 2.0f);
-    case CpuIntrinsic::Avx1 : return std::make_pair("Avx"    , 1.0f);
-    case CpuIntrinsic::Sse42: return std::make_pair("Sse"    , 4.2f);
-    case CpuIntrinsic::Sse41: return std::make_pair("Sse"    , 4.1f);
-    case CpuIntrinsic::Ssse3: return std::make_pair("Ssse"   , 3.0f);
-    case CpuIntrinsic::Sse3 : return std::make_pair("Sse"    , 3.0f);
-    case CpuIntrinsic::Sse2 : return std::make_pair("Sse"    , 2.0f);
-    case CpuIntrinsic::Sse  : return std::make_pair("Sse"    , 1.0f);
-    case CpuIntrinsic::Neon : return std::make_pair("Neon"   , 1.0f);
-    default:                  return std::make_pair("Invalid", 0.0f);
-  }
+/// Returns the total number of CPUs in the system.
+std::size_t cpuCount();
+
+/// Returns the total number of physical cores in the system.
+std::size_t physicalCores();
+
+/// Returns the total number of logical cores in the system.
+std::size_t logicalCores();
+
+/// Returns the size of the cache line on the CPU, in bytes.
+std::size_t cachelineSize();
+
+/// Returns the size of the L1 cache.
+std::size_t l1CacheSize();
+
+/// Returns the size of the L2 cache, in bytes.
+std::size_t l2CacheSize();
+
+/// Returns the size of the L3 cache, in bytes.
+std::size_t l3CacheSize();
+
+/// Returns the number of logical cores which share the L1 cache.
+std::size_t l1Sharing();
+
+/// Returns the number of logical cores which share the L2 cache.
+std::size_t l2Sharing();
+
+/// Returns the highest supported set of intrinsics.
+IntrinsicSet intrinsicSet();
+
+/// Returns a string representation of the intrinsics.
+/// \param[in]  intrinsicSet  The intrinsic set to get the string representation
+///                           of.
+std::string intrinsicAsString(IntrinsicSet intrinsicSet);
+
+/// Writes the cpu information for the system.
+/// \todo Add support for the type of output.
+void writesCpuInfo();
+
+/// This namespace contains constexpr versions of the functions, if they are
+/// available. If the function is not available, 0 is returned. This allows
+/// implementations to specialize functions for runtime and compile time, for
+/// example:
+/// 
+/// \code{.cpp}
+/// // Default version, cpuCores is known at compile time:
+/// template <int cpuCores>
+/// inline auto doSomethingImpl() {
+///   // Imprmentation using compile time coreCount ...
+/// }
+/// 
+/// // Runtime version, cpuCount = 0 therefore not known at compile time:
+/// template <>
+/// auto doSomething<System::Cx::UnknownCpuCount>() {
+///   // Implementation using runtime version ...
+/// }
+/// 
+/// // Wrapper function which calls the appropriate implementation:
+/// auto doSomething() {
+///   return doSomethingImpl<System::Cx::cpuCount()>();
+/// }
+/// \endcode
+/// 
+/// With c++17, ```if constexpr(System::Cx::cpuCount) {}``` could also be used.
+namespace Cx {
+
+/// Returns the total number of CPUs in the system.
+static constexpr auto cpuCount() -> std::size_t {
+#if defined(VoxxCpuCount)
+  return VoxxCpuCount;
+#else
+  return 0;
+#endif // VoxxCpuCount
 }
 
-/// This struct stores CPU information, and can be used both at runtime and
-/// compile time (if a binary representation of the information is known at
-/// compile time. The class defines the following information related to the
-/// CPU:
-/// 
-/// intrinsic       : The latest supported intrinsic set.
-/// physical cores  : The number of physical cores for the CPU.
-/// logical core    : The number of logical cores for the CPU.
-/// cacheline size  : The number of bytes in the cache line.
-/// L1 cache size   : The size of the L1 cache.
-/// L2 cache size   : The size of the L2 cache, in bytes.
-/// 
-/// It's assume here that a single CPU does not have more than 32 physical
-/// cores, and no more than 64 logical cores.
-class CpuInfo {
- public:
-  //==--- Con/destructors --------------------------------------------------==//
-  
-  /// Default constructor -- creates uninitialized information.
-  CpuInfo() : Value(0) {
-    fillProperties();
-  }
-
-  /// Constructor -- sets the binary value of the cpu properties.
-  constexpr CpuInfo(uint64_t value) noexcept : Value(value) {}
-
-  //==--- Getters ----------------------------------------------------------==//
-  
-  /// Returns the latest supported intrinsic set.
-  constexpr auto intrinsic() const noexcept -> uint64_t {
-    return getProperty(Mask::Intrinsic);
-  }
-
-  /// Returns the number of physical cores.
-  constexpr auto physicalCores() const noexcept -> uint64_t {
-    return getProperty(Mask::PhysicalCores);
-  }
-
-  /// Returns the number of logical cores.
-  constexpr auto logicalCores() const noexcept -> uint64_t {
-    return getProperty(Mask::LogicalCores);
-  }
-
-  /// Returns the size of a cache line, in bytes.
-  constexpr auto cachelineSize() const noexcept -> uint64_t {
-    return getProperty(Mask::CachelineSize);
-  }
-
-  /// Returns the size of the L1 cache, in bytes.
-  constexpr auto cacheSizeL1() const noexcept -> uint64_t {
-    return getProperty(Mask::CacheSizeL1);
-  }
-
-  /// Returns the size of the L1 cache, in bytes.
-  constexpr auto cacheSizeL2() const noexcept -> uint64_t {
-    return getProperty(Mask::CacheSizeL2);
-  }
-
-  //==--- Setters ----------------------------------------------------------==//
-
-  /// Sets the supported set of intrinsics.
-  /// \param[in]  intrinsic   The value of the supported intrinsics
-  constexpr void setIntrinsics(uint64_t intrinsic) noexcept {
-    setProperty(intrinsic, Mask::Intrinsic);
-  }
-
-  /// Sets the number of physical cores.
-  /// \param[in]  cores   The number of physical cores.
-  constexpr void setPhysicalCores(uint64_t cores) noexcept {
-    setProperty(cores, Mask::PhysicalCores);
-  }
-
-  /// Sets the number of logical cores.
-  /// \param[in]  cores   The number of logical cores.
-  constexpr void setLogicalCores(uint64_t cores) noexcept {
-    setProperty(cores, Mask::LogicalCores);
-  }
-
-  /// Set the size of the cacheline, in bytes.
-  /// \param[in]  size  The size of the cache line, in bytes.
-  constexpr void setCachelineSize(uint64_t size) noexcept {
-    setProperty(size, Mask::CachelineSize);
-  }
-
-  /// Sets the size of the level 1 cache, in bytes.
-  /// \param[in]  size  The size of the first level cache, in bytes.
-  constexpr void setL1CacheSize(uint64_t size) noexcept {
-    setProperty(size >> magnitudeShift, Mask::CacheSizeL1);
-  }
-
-  /// Sets the size of the level 2 cache, in B.
-  /// \param[in]  size  The size of the second level cache, in bytes.
-  constexpr void setL2CacheSize(uint64_t size) noexcept {
-    setProperty(size >> magnitudeShift, Mask::CacheSizeL2);
-  }
-
-  /// Prints the CPU information.
-  void print() const {
-    constexpr auto format    = "| %-28s%-10s%38llu |\n";
-    constexpr auto hexFormat = "| %-28s%-10s%#38lx |\n";
-    constexpr auto intFormat = "| %-28s%-10s%34s %2.1f |\n";
-    const     auto intrin    = printableIntrinsicInfo(intrinsic());
-    const     auto banner    = [] () { 
-      printf("|==%s==|\n", std::string(74, '-').c_str()); 
-    };
-
-    banner();
-    printf(format   , "Cpu Number"        , ":", uint64_t{0}                );
-    printf(intFormat, "Intrinsic Set"     , ":", intrin.first, intrin.second);
-    printf(format   , "Physical Cores"    , ":", physicalCores()            );
-    printf(format   , "Logical Cores"     , ":", logicalCores()             );
-    printf(format   , "Cacheline Size (B)", ":", cachelineSize()            );
-    printf(format   , "L1 Cache Size (B)" , ":", cacheSizeL1()              );
-    printf(format   , "L2 Cache Size (B)" , ":", cacheSizeL2()              );
-    printf(hexFormat, "Raw Representation", ":", Value                      );
-    banner();
-  }
-
- private:
-  std::size_t Value; //!< The value which defines the supported functionality.
-  
-  /// Defines the number of shifts to change 3 orders of magnitude 
-  /// (1 << 10 = 1024).
-  static constexpr uint64_t magnitudeShift = 10;
-                  
-  /// The Mask enum defines the bit masks for the fields.
-  enum Mask : uint64_t {
-    Intrinsic     = 0x00000000000001F, //!< Intrinsic set  : Bits [00 - 04].
-    PhysicalCores = 0x0000000000003E0, //!< Physical cores : Bits [05 - 09].
-    LogicalCores  = 0x00000000000FC00, //!< Logical cores  : Bits [10 - 15].
-    CachelineSize = 0x000000001FF0000, //!< Size in Bytes  : Bits [16 - 24].
-    CacheSizeL1   = 0x00001FFFE000000, //!< Size in KiB    : Bits [25 - 40].
-    CacheSizeL2   = 0xFFFFE0000000000, //!< Size in Kib    : Bits [41 - 59].
-  };
-
-  /// Sets the bits for a property, first clearing the property, and then
-  /// setting it.
-  /// \param[in] value The value to set the property to.
-  /// \param[in] mask  The mask for the property.
-  constexpr void setProperty(uint64_t value, uint64_t mask) noexcept {
-    Value = (Value & (~mask)) | ((value << firstSetBitIndex(mask)) & mask);
-  }
-
-  /// Gets one of the properties.
-  /// \param[in] mask  The mask for the property.
-  constexpr auto getProperty(uint64_t mask) const noexcept -> uint64_t {
-    return (Value & mask) >> firstSetBitIndex(mask);
-  }
-
-  //==--- Non-constexpr platform-specific helpers --------------------------==//
-
-#if defined(__APPLE__)
-
-  /// Returns the highest supported set of intrinsics.
-  static inline auto getCpuIntrinsics() -> uint8_t {
-    auto queries = { 
-      std::make_pair("hw.optional.avx2_0",           CpuIntrinsic::Avx2 ),
-      std::make_pair("hw.optional.avx1_0",           CpuIntrinsic::Avx1 ),
-      std::make_pair("hw.optional.sse4_2",           CpuIntrinsic::Sse42),
-      std::make_pair("hw.optional.sse4_1",           CpuIntrinsic::Sse41),
-      std::make_pair("hw.optional.supplementalsse3", CpuIntrinsic::Ssse3),
-      std::make_pair("hw.optional.sse3"            , CpuIntrinsic::Sse3 ),
-      std::make_pair("hw.optional.sse2"            , CpuIntrinsic::Sse2 ),
-      std::make_pair("hw.optional.sse"             , CpuIntrinsic::Sse  )
-    };
-
-    for (const auto& query : queries) {
-      std::size_t value = 0, size = sizeof(std::size_t);
-      sysctlbyname(query.first, &value, &size, 0, 0);
-      if (value) return query.second;
-    }
-    return CpuIntrinsic::Invalid;
-  }
-
-  /// Fills all the cpu properties.
-  void fillProperties() {
-    setIntrinsics(getCpuIntrinsics());
-
-    // Sets the property calling setFunction with value.
-    auto setProperty = [this] (auto& setFunction, auto value) {
-      (this->*setFunction)(value);
-    };
-    auto properties  = std::make_tuple(
-      std::make_pair("hw.cachelinesize", &CpuInfo::setCachelineSize),
-      std::make_pair("hw.physicalcpu"  , &CpuInfo::setPhysicalCores),
-      std::make_pair("hw.logicalcpu"   , &CpuInfo::setLogicalCores ),
-      std::make_pair("hw.l1dcachesize" , &CpuInfo::setL1CacheSize  ),
-      std::make_pair("hw.l2cachesize"  , &CpuInfo::setL2CacheSize  )
-    );
-
-    forEach(properties, [setProperty] (auto&& property) {
-      std::size_t value = 0, size = sizeof(std::size_t);
-      sysctlbyname(property.first, &value, &size, 0, 0);
-      setProperty(property.second, value);
-    });
-  }
-
-#elif defined(WIN32)
-
-#elif defined(linux)
-
+/// Returns the number of physical cores in the system.
+static constexpr auto physicalCores() -> std::size_t {
+#if defined(VoxxPhysicalCores)
+  return VoxxPhysicalCores;
+#else
+  return 0;
 #endif
-};
+}
 
-}} // namespace Voxx::Utility
+/// Returns the number of logical cores in the system.
+static constexpr auto logicalCores() -> std::size_t {
+#if defined(VoxxLogicalCores)
+  return VoxxLogicalCores;
+#else
+  return 0;
+#endif
+}
+
+/// Returns the size of a cacheline, in bytes.
+static constexpr auto cachelineSize() -> std::size_t {
+#if defined(VoxxCachelineSize)
+  return VoxxCachelineSize;
+#else
+  return 0;
+#endif
+}
+
+/// Returns the size of the L1 cache, in bytes.
+static constexpr auto l1CacheSize() -> std::size_t {
+#if defined(VoxxL1CacheSize)
+  return VoxxL1CacheSize;
+#else
+  return 0;
+#endif
+}
+
+/// Returns the size of the L2 cache, in bytes.
+static constexpr auto l2CacheSize() -> std::size_t {
+#if defined(VoxxL2CacheSize)
+  return VoxxL2CacheSize;
+#else
+  return 0;
+#endif
+}
+
+/// Returns the size of the L3 cache, in bytes.
+static constexpr auto l3CacheSize() -> std::size_t {
+#if defined(VoxxL2CacheSize)
+  return VoxxL2CacheSize;
+#else
+  return 0;
+#endif
+}
+
+/// Returns the number of logical processors which share the L1 cache.
+static constexpr auto l1Sharing() -> std::size_t {
+#if defined(VoxxL1Sharing)
+  return VoxxL1Sharing;
+#else
+  return 0;
+#endif
+}
+
+/// Returns the number of logical processors which share the L2 cache.
+static constexpr auto l2Sharing() -> std::size_t {
+#if defined(VoxxL2Sharing)
+  return VoxxL2Sharing;
+#else
+  return 0;
+#endif
+}
+
+/// Returns the supported intrinsic set.
+static constexpr auto intrinsicSet() -> IntrinsicSet {
+#if defined(VoxxIntrinsicSet)
+  return static_cast<IntrinsicSet>(VoxxIntrinsicSet);
+#else
+  return IntrinsicSet::Invalid;
+#endif
+}
+
+}}}} // namespace Voxx::Utility::System::Cx

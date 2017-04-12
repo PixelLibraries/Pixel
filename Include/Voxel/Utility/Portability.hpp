@@ -14,8 +14,7 @@
 //
 //==------------------------------------------------------------------------==//
 
-#ifndef VOXEL_UTILITY_PORTABILITY_HPP
-#define VOXEL_UTILITY_PORTABILITY_HPP
+#pragma once
 
 #if defined(__CUDA_ARCH__)
 
@@ -59,5 +58,3 @@
 # define VoxxDeviceHost
 
 #endif // VoxxCudaSupported
-
-#endif // VOXEL_UTILITY_PORTABILITY_HPP

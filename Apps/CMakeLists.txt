@@ -1,4 +1,4 @@
-#==--- Src/CMakeLists.txt ---------------------------------------------------==#
+#==--- Apps/CMakeLists.txt --------------------------------------------------==#
 
 #==--- Cuda -----------------------------------------------------------------==#
 
@@ -29,3 +29,13 @@ include_directories(
   ${VOXX_ROOT}/Include
   ${CUDA_INCLUDE_DIRS}
 )
+
+link_directories(${CUDA_LIBRARY_DIRS})
+
+add_executable(
+  SystemInformation 
+  ${Utility_SOURCE_DIR}/Apps/SystemInformation.cpp
+  ${Utility_SOURCE_DIR}/Src/SystemInfo.cpp
+)
+target_link_libraries(SystemInformation ${CUDA_LIBS})
+install(TARGETS SystemInformation DESTINATION ${CMAKE_INSTALL_PREFIX}/Voxel/bin)

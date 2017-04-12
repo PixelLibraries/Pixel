@@ -18,14 +18,14 @@
 #include <Voxel/Utility/Bitwise.hpp>
 #include <Voxel/Utility/Debug.hpp>
 #include <Voxel/Utility/Portability.hpp>
-#include <cstdio>
-#include <string>
+#include <Voxel/Utility/Io/IoFwd.hpp>
 
 namespace Voxx    {
 namespace Utility {
 namespace System  {
 
 #if defined(VoxxGpuCount)         // Compile time version
+
 /// Returns the total number of GPUs in the system.
 VoxxDeviceHost static constexpr auto gpuCount() -> int {
   return VoxxGpuCount;
@@ -163,23 +163,13 @@ class GpuInfo {
   }
 
   /// Prints the CPU information.
-  void print() const {
-    constexpr auto format    = "| %-28s%-10s%38llu |\n";
-    constexpr auto hexFormat = "| %-28s%-10s%#38lx |\n";
-    constexpr auto strFormat = "| %-28s%-10s%38s |\n";
-    const     auto arch      = architectureString().c_str();
-    const     auto banner    = [] () { 
-      printf("|==%s==|\n", std::string(74, '-').c_str()); 
-    };
-
-    banner();
-    printf(format   , "Gpu Number"          , ":", uint64_t{0}             );
-    printf(strFormat, "Compute Architecture", ":", arch                    );
-    printf(format   , "Multiprocessors"     , ":", multiprocessors()       );
-    printf(format   , "Cores/multiprocessor", ":", coresPerMultiProcessor());
-    printf(format   , "Total Cores"         , ":", physicalCores()         );
-    printf(hexFormat, "Raw Representation"  , ":", Value                   );
-    banner();
+  void print(Io::Format format) const {
+    using namespace Voxx::Utility::Io;
+    switch (format) {
+      case Format::Hexadecimal : printRaw()     ; break;
+      case Format::Readable    : printReadable(); break;
+      default : break;
+    }
   }
  
  private:
@@ -243,7 +233,31 @@ class GpuInfo {
     setCoresPerMultiprocessor(coresForArch(deviceProps.major,
                                            deviceProps.minor));
 #endif // VoxxCudaSupported
-  } 
+  }
+
+  //==--- Printing ---------------------------------------------------------==//
+  
+  /// Prints the information in a raw format.
+  void printRaw() const {
+    using namespace Voxx::Utility::Io;
+    using Out = Output<OutputMode::Terminal>;
+    const auto deviceName = std::string("Gpu") + std::to_string(0);
+    printf(Out::hexFormat, deviceName.c_str(), Value);
+  }
+  
+  /// Prints the information in a readable format.
+  void printReadable() const {
+    using namespace Voxx::Utility::Io;
+    using Out = Output<OutputMode::Terminal>;
+
+    Out::banner();
+    printf(Out::longFormat, "Gpu Number"     , uint64_t{0}                 );
+    printf(Out::strFormat , "Architecture"   , architectureString().c_str());
+    printf(Out::longFormat, "Processors"     , multiprocessors()           );
+    printf(Out::longFormat, "Cores/processor", coresPerMultiProcessor()    );
+    printf(Out::longFormat, "Total Cores"    , physicalCores()             );
+    Out::banner();   
+  }
 };
 
 }} // namespace Voxx::Utility

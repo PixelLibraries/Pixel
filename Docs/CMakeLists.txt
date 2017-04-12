@@ -1,20 +1,20 @@
 #==--- Utility/Docs/CMakeLists.txt -----------------------------------------==#
 
-FIND_PACKAGE(Doxygen QUIET)
+find_package(Doxygen QUIET)
 
-IF (DOXYGEN_FOUND)
-  CONFIGURE_FILE(
+if(DOXYGEN_FOUND)
+  configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in 
     ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile 
     @ONLY
   )
 
-  ADD_CUSTOM_TARGET(Docs
+  add_custom_target(Docs
     COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} 
     COMMENT "Generate doxygen documentation"
   )
-ENDIF(DOXYGEN_FOUND)
+endif(DOXYGEN_FOUND)
 
 #==-------------------------------------------------------------------------==#
 

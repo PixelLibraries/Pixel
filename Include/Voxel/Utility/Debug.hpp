@@ -13,8 +13,7 @@
 //
 //==------------------------------------------------------------------------==//
 
-#ifndef VOXEL_UTILITY_DEBUG_HPP
-#define VOXEL_UTILITY_DEBUG_HPP
+#pragma once
 
 #include "Portability.hpp"
 
@@ -36,7 +35,7 @@
 // Debug mode definitions:
 #include <cassert>
 #include <exception>
-#include <iostream>
+#include <cstdio>
 
 /// Macro to check for Cuda call errors, when in debug mode.
 #define VoxxCudaErrorCheck(result) {                                          \
@@ -55,9 +54,9 @@ namespace Voxx {
 /// \param[in] line    The line in the file where the error was detected.
 inline void checkCudaError(cudaError_t code, const char* file, int line) {
   if (code != cudaSuccess)  {
-    std::cout << "\nTerminated (Cuda Error): " << cudaGetErrorString(code)
-              << "\n\t file : "                << file
-              << "\n\t line : "                << line << "\n\n";
+    printf("Terninated (Cuda Error):");
+    printf("\n\tError : %s\n\tFile  : %s\n\tLine  :%-7i\n\n",
+           cudaGetErrorString(code), file, line);
     std::terminate();
    }
 }
@@ -65,4 +64,3 @@ inline void checkCudaError(cudaError_t code, const char* file, int line) {
 } // namespace Voxx
 
 #endif // NDEBUG
-#endif // VOXEL_UTILITY_DEBUG_HPP

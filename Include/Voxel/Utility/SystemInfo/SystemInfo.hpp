@@ -15,31 +15,13 @@
 
 #pragma once
 
-#include "CpuInfo.hpp"
-#include "GpuInfo.hpp"
-#include <Voxel/Utility/Debug.hpp>
-#include <Voxel/Utility/Portability.hpp>
-
 namespace Voxx    {
 namespace Utility {
+namespace System  {
 
-/// The SystemInfo struct defines properties of the system.
-/// \todo Change this for all system CPUs and GPUs.
-class SystemInfo {
- public:
-  /// Constructor -- creates the system information.
-  SystemInfo() : Cpus{}, Gpus{0} {} 
- 
-  /// Prints the system information.
-  void print() const {
-    // for (const auto& cpu : Cpus)
-    Cpus.print();
-    // For (const auto& gpu : Gpus)
-    Gpus.print();
-  }
- private:
-  CpuInfo Cpus;
-  GpuInfo Gpus;
-};
+/// The printAllInfo function prints the information for all components of
+/// the system.
+/// \todo Add parameter to specific the mode of writing.
+void writeSystemInfo();
 
-}} // namespace Voxx::Utility
+}}} // namespace Voxx::Utility::System
