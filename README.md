@@ -17,13 +17,11 @@ run twice (see below).
 
 The following are the most basic options for installation:
 
-|--------------------------------------------------------------------------|
 | Variable             | Description                       | Options       |
 |:--------------------:|:---------------------------------:|:-------------:|
 | CMAKE_BUILD_TYPE     | The build type                    | Debug/Release |
 | CMAKE_INSTALL_PREFIX | Path to install directory         | User defined  |
-| VOXX_ROOT 		   | Root directory for Voxel software | User defined  |
-|--------------------------------------------------------------------------|
+| VOXX_ROOT 	       | Root directory for Voxel software | User defined  |
 
 __Note:__ The build scripts automatically append ```Voxel``` to
 		  CMAKE_INSTALL_PREFIX, so ```/opt``` will install all software to
