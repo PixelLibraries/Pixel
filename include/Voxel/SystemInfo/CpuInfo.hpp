@@ -1,6 +1,6 @@
-//==--- Utility/SystemInfo/CpuInfo.hpp --------------------- -*- C++ -*- ---==//
+//==--- Voxel/SystemInfo/CpuInfo.hpp ----------------------- -*- C++ -*- ---==//
 //            
-//                                Voxel : Utility 
+//                                    Voxel
 //
 //                        Copyright (c) 2017 Rob Clucas
 //  
@@ -15,14 +15,13 @@
 
 #pragma once
 
+#include <Voxel/Algorithm/Algorithm.hpp>
+#include <Voxel/Io/IoFwd.hpp>
 #include <Voxel/Utility/Bitwise.hpp>
-#include <Voxel/Utility/Algorithm/Algorithm.hpp>
-#include <Voxel/Utility/Io/IoFwd.hpp>
 #include <string>
 
-namespace Voxx    { 
-namespace Utility {
-namespace System  {
+namespace Voxx   {
+namespace System {
 
 /// Defines vector instruction support for the CPU.
 enum class IntrinsicSet : uint8_t {
@@ -194,4 +193,4 @@ static constexpr auto intrinsicSet() -> IntrinsicSet {
 #endif
 }
 
-}}}} // namespace Voxx::Utility::System::Cx
+}}} // namespace Voxx::System::Cx

@@ -1,6 +1,6 @@
-//==--- Utility/Io/Io.hpp ---------------------------------- -*- C++ -*- ---==//
+//==--- Voxel/Io/Io.hpp ------------------------------------ -*- C++ -*- ---==//
 //            
-//                                Voxel : Utility 
+//                                     Voxel
 //
 //                        Copyright (c) 2017 Rob Clucas
 //  
@@ -21,7 +21,6 @@
 #include <string>
 
 namespace Voxx    {
-namespace Utility {
 namespace Io      {
 
 /// Specialization for Console output.
@@ -98,4 +97,4 @@ struct Output<Mode::Console> {
   }
 };
 
-}}} // namespace Voxx::Utility::Io
+}} // namespace Voxx::Io

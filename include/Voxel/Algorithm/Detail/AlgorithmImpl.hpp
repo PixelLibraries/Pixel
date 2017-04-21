@@ -1,6 +1,6 @@
-//==--- Utility/Algorithm/Detail/AlgorithmImpl.hpp --------- -*- C++ -*- ---==//
+//==--- Voxel/Algorithm/Detail/AlgorithmImpl.hpp ----------- -*- C++ -*- ---==//
 //            
-//                                Voxel : Utility 
+//                                    Voxel
 //
 //                        Copyright (c) 2017 Rob Clucas
 //  
@@ -15,12 +15,11 @@
 
 #pragma once
 
-#include <Voxel/Utility/Algorithm/AlgorithmFwd.hpp>
+#include <Voxel/Algorithm/AlgorithmFwd.hpp>
 #include <tuple>
 #include <utility>
 
-namespace Voxx    {
-namespace Utility {
+namespace Voxx {
 
 //==--- invoke -------------------------------------------------------------==//
 
@@ -104,4 +103,4 @@ forEach(const std::tuple<Ts...>& tuple, Callable callable) {
                       std::make_index_sequence<sizeof...(Ts)>{});
 }
 
-}} // namespace Voxx::Utility
+} // namespace Voxx

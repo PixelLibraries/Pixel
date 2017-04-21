@@ -1,6 +1,6 @@
-//==--- Utility/Bitwise.hpp -------------------------------- -*- C++ -*- ---==//
+//==--- Voxel/Utility/Bitwise.hpp -------------------------- -*- C++ -*- ---==//
 //            
-//                                Voxel : Utility 
+//                                    Voxel
 //
 //                        Copyright (c) 2017 Rob Clucas
 //  
@@ -17,8 +17,7 @@
 
 #include <cstdlib>
 
-namespace Voxx    {
-namespace Utility {
+namespace Voxx {
 
 /// Computes the value with only the least significant bit set.
 /// \param[in]  value  The value to get the least significant bit of.
@@ -55,4 +54,4 @@ static constexpr auto firstSetBitIndex(uint64_t val) noexcept -> uint64_t {
   return result;
 }
 
-}} // namespace Voxx::Utility
+} // namespace Voxx

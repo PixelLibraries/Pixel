@@ -1,6 +1,6 @@
 //==--- Src//SystemInfo.cpp -------------------------------- -*- C++ -*- ---==//
 //            
-//                                Voxel : Utility 
+//                                    Voxel
 //
 //                        Copyright (c) 2017 Rob Clucas
 //  
@@ -14,9 +14,9 @@
 //
 //==------------------------------------------------------------------------==//
 
-#include <Voxel/Utility/SystemInfo/SystemInfo.hpp>
-#include <Voxel/Utility/SystemInfo/CpuInfo.hpp>
-#include <Voxel/Utility/Io/Io.hpp>
+#include <Voxel/SystemInfo/SystemInfo.hpp>
+#include <Voxel/SystemInfo/CpuInfo.hpp>
+#include <Voxel/Io/Io.hpp>
 
 // Include the relevant implementation:
 #if defined(__APPLE__)
@@ -30,7 +30,6 @@
 #endif
 
 namespace Voxx    {
-namespace Utility {
 namespace System  {
 
 std::string intrinsicAsString(IntrinsicSet intrinsic) {
@@ -49,7 +48,7 @@ std::string intrinsicAsString(IntrinsicSet intrinsic) {
 }
 
 void writeCpuInfo() {
-    using namespace Voxx::Utility::Io;
+    using namespace Voxx::Io;
     using      Out       = Output<Mode::Console>;
     const auto intrinsic = intrinsicAsString(intrinsicSet());
 
@@ -74,4 +73,4 @@ void writeSystemInfo() {
   writeCpuInfo();
 }
 
-}}} // namespace Voxx::Utility::System
+}} // namespace Voxx::System

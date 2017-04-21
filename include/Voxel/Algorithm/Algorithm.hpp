@@ -1,6 +1,6 @@
-//==--- Utility/Algorithm/Algorithm.hpp -------------------- -*- C++ -*- ---==//
+//==--- Voxel/Algorithm/Algorithm.hpp ---------------------- -*- C++ -*- ---==//
 //            
-//                                Voxel : Utility 
+//                                    Voxel 
 //
 //                        Copyright (c) 2017 Rob Clucas
 //  

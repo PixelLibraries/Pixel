@@ -1,6 +1,6 @@
-#==--- CMake/VoxxTest.cmake -------------------------------------------------==#
+#==--- CMake/VoxelTest.cmake ------------------------------------------------==#
 #
-#                                 Voxel : Utility 
+#                                     Voxel
 #
 #                         Copyright (c) 2017 Rob Clucas
 #  
@@ -28,7 +28,7 @@
 # VOXX_TEST_DEPENDENCIES  : Any sources which are a dependecy of the test file.
 # VOXX_TEST_BINARY_DIR    : Directory to install tests to.
 #==--------------------------------------------------------------------------==#
-function(voxx_test VOXX_TEST_NAME)
+function(voxel_test VOXX_TEST_NAME)
   # Append -I to all include directories.
   foreach(ARG ${VOXX_TEST_INCLUDE_DIRS})
     set(TEST_INCLUDE_DIRS "${TEST_INCLUDE_DIRS} -I${ARG}")   

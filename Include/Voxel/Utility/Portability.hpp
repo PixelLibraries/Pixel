@@ -1,6 +1,6 @@
-//==--- Utility/Portability.hpp ---------------------------- -*- C++ -*- ---==//
+//==--- Voxel/Utility/Portability.hpp ---------------------- -*- C++ -*- ---==//
 //            
-//                                Voxel : Utility 
+//                                    Voxel
 //
 //                        Copyright (c) 2017 Rob Clucas
 //  

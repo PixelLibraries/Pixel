@@ -1,6 +1,6 @@
-//==--- Utility/SystemInfo/GpuInfo.hpp --------------------- -*- C++ -*- ---==//
+//==--- Voxel/SystemInfo/GpuInfo.hpp ----------------------- -*- C++ -*- ---==//
 //            
-//                                Voxel : Utility 
+//                                    Voxel
 //
 //                        Copyright (c) 2017 Rob Clucas
 //  
@@ -15,13 +15,12 @@
 
 #pragma once
 
+#include <Voxel/Io/IoFwd.hpp>
 #include <Voxel/Utility/Bitwise.hpp>
 #include <Voxel/Utility/Debug.hpp>
 #include <Voxel/Utility/Portability.hpp>
-#include <Voxel/Utility/Io/IoFwd.hpp>
 
 namespace Voxx    {
-namespace Utility {
 namespace System  {
 
 #if defined(VoxxGpuCount)         // Compile time version
@@ -260,4 +259,4 @@ class GpuInfo {
   }
 };
 
-}} // namespace Voxx::Utility
+} // namespace Voxx

@@ -1,6 +1,6 @@
-//==--- Utility/SystemInfo/SystemInfo.hpp ------------------ -*- C++ -*- ---==//
+//==--- Voxel/SystemInfo/SystemInfo.hpp -------------------- -*- C++ -*- ---==//
 //            
-//                                Voxel : Utility 
+//                                    Voxel
 //
 //                        Copyright (c) 2017 Rob Clucas
 //  
@@ -16,7 +16,6 @@
 #pragma once
 
 namespace Voxx    {
-namespace Utility {
 namespace System  {
 
 /// The printAllInfo function prints the information for all components of
@@ -24,4 +23,4 @@ namespace System  {
 /// \todo Add parameter to specific the mode of writing.
 void writeSystemInfo();
 
-}}} // namespace Voxx::Utility::System
+}} // namespace Voxx::System

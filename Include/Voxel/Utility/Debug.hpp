@@ -1,6 +1,6 @@
-//==--- Utility/Debug.hpp ---------------------------------- -*- C++ -*- ---==//
+//==--- Voxel/Utility/Debug.hpp ---------------------------- -*- C++ -*- ---==//
 //            
-//                                Voxel : Utility 
+//                                    Voxel 
 //
 //                        Copyright (c) 2017 Rob Clucas
 //  

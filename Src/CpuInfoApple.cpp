@@ -1,6 +1,6 @@
-//==--- Src/SystemInfo/CpuInfoApple.cpp -------------------- -*- C++ -*- ---==//
+//==--- Src/CpuInfoApple.cpp ------------------------------- -*- C++ -*- ---==//
 //            
-//                                Voxel : Utility 
+//                                    Voxel
 //
 //                        Copyright (c) 2017 Rob Clucas
 //  
@@ -15,14 +15,13 @@
 
 #if defined(__APPLE__)
 
-#include <Voxel/Utility/SystemInfo/CpuInfo.hpp>
-#include <Voxel/Utility/Io/Io.hpp>
+#include <Voxel/Io/Io.hpp>
+#include <Voxel/SystemInfo/CpuInfo.hpp>
 #include <sys/sysctl.h>
 #include <cstdlib>
 
-namespace Voxx    {
-namespace Utility {
-namespace System  {
+namespace Voxx   {
+namespace System {
 
 namespace {
 
@@ -116,6 +115,6 @@ IntrinsicSet intrinsicSet() {
   return IntrinsicSet::Invalid;
 }
 
-}}} // namespace Voxx::Utility;:System
+}} // namespace Voxx::System
 
 #endif // __APPLE__

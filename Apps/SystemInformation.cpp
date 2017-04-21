@@ -1,6 +1,6 @@
 //==--- Apps/SystemInformation.cpp ------------------------- -*- C++ -*- ---==//
 //            
-//                                Voxel : Utility 
+//                                    Voxel
 //
 //                        Copyright (c) 2017 Rob Clucas
 //  
@@ -14,9 +14,9 @@
 //
 //==------------------------------------------------------------------------==//
 
-#include <Voxel/Utility/SystemInfo/SystemInfo.hpp>
+#include <Voxel/SystemInfo/SystemInfo.hpp>
 
 int main(int argc, char** argv) {
-  Voxx::Utility::System::writeSystemInfo();
+  Voxx::System::writeSystemInfo();
   return 0;
 }

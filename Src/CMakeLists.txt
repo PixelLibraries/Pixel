@@ -1,4 +1,4 @@
-#==--- Src/CMakeLists.txt ---------------------------------------------------==#
+#==--- Utility/src/CMakeLists.txt -------------------------------------------==#
 
 #==--- Cuda -----------------------------------------------------------------==#
 
@@ -24,8 +24,15 @@ endif(CUDA_FOUND)
 
 #==--- Common ---------------------------------------------------------------==#
 
-include_directories(
-  ${Utility_SOURCE_DIR}/Include
-  ${VOXX_ROOT}/Include
-  ${CUDA_INCLUDE_DIRS}
-)
+include_directories(${CUDA_INCLUDE_DIRS} ${Voxel_SOURCE_DIR}/include)
+
+#==--- Libraries ------------------------------------------------------------==#
+
+add_library(VoxelSystemInfo SystemInfo.cpp)
+install(TARGETS  VoxelSystemInfo
+        EXPORT   VoxelLibs
+        LIBRARY  DESTINATION lib
+        ARCHIVE  DESTINATION lib
+        RUNTIME  DESTINATION bin)
+target_include_directories(
+  VoxelSystemInfo PUBLIC ${CMAKE_INSTALL_PREFIX}/include)

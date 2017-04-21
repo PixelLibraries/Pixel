@@ -1,6 +1,6 @@
-//==--- Utility/Algorithm/AlgorithmFwd.hpp ----------------- -*- C++ -*- ---==//
+//==--- Voxel/Algorithm/AlgorithmFwd.hpp ------------------- -*- C++ -*- ---==//
 //            
-//                                Voxel : Utility 
+//                                    Voxel
 //
 //                        Copyright (c) 2017 Rob Clucas
 //  
@@ -18,8 +18,7 @@
 #include <Voxel/Utility/Portability.hpp>
 #include <tuple>
 
-namespace Voxx    {
-namespace Utility {
+namespace Voxx {
 
 /// This function invokes a callable function \p c on the element \p element,
 /// and then on the remaining \p elements, when \p element and \p elements are
@@ -89,4 +88,4 @@ template <typename Callable, typename... Ts>
 constexpr inline void 
 forEach(const std::tuple<Ts...>& tuple, Callable callable);
 
-}} // namespace Voxx::Utility
+} // namespace Voxx

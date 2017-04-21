@@ -1,6 +1,6 @@
-//==--- Utility/Io/IoFwd.hpp ------------------------------- -*- C++ -*- ---==//
+//==--- Voxel/Io/IoFwd.hpp --------------------------------- -*- C++ -*- ---==//
 //            
-//                                Voxel : Utility 
+//                                    Voxel
 //
 //                        Copyright (c) 2017 Rob Clucas
 //  
@@ -18,7 +18,6 @@
 #include <cstdint>
 
 namespace Voxx    {
-namespace Utility {
 namespace Io      {
 
 /// The Format enum defines the types of formats for input and output.
@@ -39,4 +38,4 @@ enum class Mode : uint16_t {
 template <Mode OutputMode>
 struct Output;
 
-}}} // namespace Voxx::Utility::Io
+}} // namespace Voxx::Io
