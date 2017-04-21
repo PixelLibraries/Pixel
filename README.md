@@ -12,7 +12,7 @@ directory are used to generate output which can be parsed by Cmake to generate
 definitions which are used to generate ```constexpr``` functions. If the Voxel is
 not already installed, then the application binaries will not be found. When
 installing Voxel for the first time, the installation script compiles the
-SystemInformation application so that the information can be added into the
+```SystemInformation``` application so that the information can be added into the
 C++ source code.
 
 ### Linux or OSX
@@ -23,35 +23,35 @@ The following are the most basic options for installation:
 |:---------------------|:----------------------------------|:--------------|
 | CMAKE_BUILD_TYPE     | The build type                    | Debug/Release |
 | CMAKE_INSTALL_PREFIX | Path to install directory         | User defined  |
-| BUILD_SHARED_LIBS	   | Build libraries as shared 		   | ON/NONE	   |
+| BUILD_SHARED_LIBS    | Build libraries as shared         | ON/NONE	   |
 
-__Note:__ The build scripts automatically append ```Voxel``` to
-		  CMAKE_INSTALL_PREFIX, so ```/opt``` will install all software to
-		  ```/opt/Voxel```. If ```Voxel``` is found in the 
-		  ```CMAKE_INSALL_PREFIX``` then the build script does not modify the
-		  variable, and it is used *as is*. For example, 
-		  ```-DCMAKE_INSTALL_PREFIX=/opt``` and 
-		  ```-DCMAKE_INSTALL_PREFIX=/opt/Voxel``` will both install to
-		  ```/opt/Voxel```.
+__Note:__ The build script automatically appends ```Voxel``` to
+	```CMAKE_INSTALL_PREFIX``` if it __is not__ part of the variable. So
+	```-DCMAKE_INSTALL_PREFIX=/opt``` will install all software to
+	```/opt/Voxel```. If ```Voxel``` __is__ found in the
+	```CMAKE_INSTALL_PREFIX``` variable then the build script __does not__
+	modify the variable, and it is used __as is__. For example,
+	```-DCMAKE_INSTALL_PREFIX=/opt``` and ```-DCMAKE_INSTALL_PREFIX=/opt/Voxel```
+	will both install to ```/opt/Voxel```.
 
 To build Voxel with __static__ libraries:
-```
+```javascript
 # From the root directory:
 mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release 	\
-	  -DCMAKE_INSTALL_PREFIX=/opt 	\
-	  ..
+cmake -DCMAKE_BUILD_TYPE=Release  \
+      -DCMAKE_INSTALL_PREFIX=/opt \
+      ..
 sudo make install
 ```
 
 To build Voxel with __shared__ libraries:
-```
+```javascript
 # From the root directory:
 mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release 	\
-	  -DCMAKE_INSTALL_PREFIX=/opt 	\
-	  -DBUILD_SHARED_LIBS=BOOL:ON   \
-	  ..
+cmake -DCMAKE_BUILD_TYPE=Release  \
+      -DCMAKE_INSTALL_PREFIX=/opt \
+      -DBUILD_SHARED_LIBS=BOOL:ON \
+      ..
 sudo make install
 ```
 
@@ -69,29 +69,30 @@ repository. Using them is as simple as including the relevant header from
 When installing Voxel, a VoxelConfig.cmake file is generated and installed in
 ```CMAKE_INSTALL_PREFIX/lib/cmake/Voxel```, which allows other libraries to use
 Voxel. To ensure that the VoxelConfig.cmake package is found, add the Voxel
-intallation path to the ```CMAKE_PREFIX_PATH``` variable when using Voxel, i.e:
+intallation path to the ```CMAKE_PREFIX_PATH``` variable when using Voxel. In
+the CMakeLists.txt file, add the following:
 
+```cmake
+set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH} VOXEL_INSTALL")
+find_package(Voxel)
 ```
-set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH} /opt/Voxel")
-```
 
-before running ```find_package(Voxel)```. The find package script defines the
-following Cmake variables:
+to find Voxel, where ```VOXEL_INSTALL_PREFIX``` is the installation prefix for
+Voxel. The ```find_package``` script defines the following Cmake variables:
 
-| Variable             | Description                       |
-|:---------------------|:----------------------------------|
-| Voxel_INCLUDES       | The include directories for compilation |
-| VOXEL_LIBRARIES      | All of the voxel libraries for linking  |
-| Voxel_LIBS           | Voxel libraries when using COMPONENTS with 
-find\_package |
-| Voxel_DEFINITIONS    | Required compiler definitions for Voxel |
+| Variable             | Description                                              |
+|:---------------------|:---------------------------------------------------------|
+| Voxel_INCLUDES       | The include directories for compilation                  |
+| Voxel_LIBRARIES      | All of the voxel libraries to link                       |
+| Voxel_LIBS           | Only libraries corresponding to those used with COMPONENTS with cmake ```find_package``` |
+| Voxel_DEFINITIONS    | Required compiler definitions for Voxel                  |
 
 ### Linking
 
 Assuming that ```find_packge(Voxel ...)``` has been run, to link against a
 single library from cmake, simple do (see list of components below):
 
-```
+```cmake
 target_link_libraries(Target Voxx::VoxelComponent)
 ```
 
@@ -99,42 +100,47 @@ where ```VoxelComponent``` is the component to link against. Alternatively,
 to link against numerous components, list the components when using
 ```find_package```:
 
-```
+```cmake
 find_package(Voxel COMPONENTS SystemInfo)
 ```
 
-which populates the ```Voxel_LIBS``` Cmake variable with the appropriate library
+which populates the ```Voxel_LIBS``` cmake variable with the appropriate library
 definitions. A target can then be linked as follows:
 
-```
+```cmake
 target_link_libraries(Target ${Voxel_LIBS})
 ```
 
 Finally, to link against all the Voxel libraries, use ```Voxel_LIBRARIES```:
 
-```
+```cmake
 target_link_libraries(Target ${Voxel_LIRARIES})
 ```
 
 ### System Info
 
-The system information component (at ```include/Voxel/SystemInfo```)
+The system information component (at ```include/Voxel/SystemInfo/```)
 defines cross-platform functionality to get information for various components of
 the system (such as cpu info, gpu info, etc). The component can be linked with
 ```Voxx::VoxelSystemInfo```, or by specifying the component with
-```find_package```:
+```find_package```, i.e:
 
-```
+```cmake
+# Find only SystemInfo:
 find_package(Voxel COMPONENTS SystemInfo)
+...
+
+# Link target with SystemInfo:
+target_link_libraries(Target Voxx::VoxelSystemInfo)
 ```
 
 ## Applications
 
 Voxel provides numerous applications as binaries, they can be built using
-```
+```bash
 make ApplicationName
 ```
-after running Cmake.
+after running Cmake as shown above.
 
 ### System Information
 
