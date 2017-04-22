@@ -24,6 +24,10 @@
 
 function(voxel_system_info)
   set(SYS_INFO "")
+  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
+                        /opt/Voxel
+                        /usr/local/Voxel)
+  find_package(Voxel)
 
   # If this is the Utility project, then it's likely that Voxel will not be
   # installed, and therefore some of the applications aren't. In this case,
@@ -77,9 +81,9 @@ function(voxel_system_info)
 
   # This branch is taken when Voxel is already installed:
   # TODO: Change this to find_package(Voxel)
-  elseif(EXISTS ${Voxel_ROOT}/bin/SystemInformation)
+  elseif(Voxel_FOUND)
     execute_process(
-      COMMAND         ${Voxel_ROOT}/bin/SystemInformation
+      COMMAND         ${Voxel_DIR}/bin/SystemInformation
       OUTPUT_VARIABLE SYSTEM_INFO
       OUTPUT_QUIET)
     set(SYSTEM_INFO ${SYSTEM_INFO} PARENT_SCOPE)

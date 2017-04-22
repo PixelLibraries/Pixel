@@ -37,6 +37,7 @@ add_executable(
 target_link_libraries(SystemInformation ${CUDA_LIBS})
 install(TARGETS              SystemInformation
         EXPORT               VoxelTargets
+        ARCHIVE DESTINATION  lib
         LIBRARY DESTINATION  lib
         RUNTIME DESTINATION  bin
         INCLUDES DESTINATION include)

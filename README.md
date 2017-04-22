@@ -35,17 +35,17 @@ __Note:__ The build script automatically appends ```Voxel``` to
 	will both install to ```/opt/Voxel```.
 
 To build Voxel with __static__ libraries:
-```javascript
+~~~py
 # From the root directory:
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release  \
       -DCMAKE_INSTALL_PREFIX=/opt \
       ..
 sudo make install
-```
+~~~
 
 To build Voxel with __shared__ libraries:
-```javascript
+~~~py
 # From the root directory:
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release  \
@@ -53,7 +53,7 @@ cmake -DCMAKE_BUILD_TYPE=Release  \
       -DBUILD_SHARED_LIBS=BOOL:ON \
       ..
 sudo make install
-```
+~~~
 
 Which will install the library to ```/opt/Voxel```, after which 
 ```make {component}``` will make any of the components.
@@ -72,10 +72,10 @@ Voxel. To ensure that the VoxelConfig.cmake package is found, add the Voxel
 intallation path to the ```CMAKE_PREFIX_PATH``` variable when using Voxel. In
 the CMakeLists.txt file, add the following:
 
-```cmake
-set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH} VOXEL_INSTALL")
+~~~cmake
+set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH} VOXEL_INSTALL_PREFIX")
 find_package(Voxel)
-```
+~~~
 
 to find Voxel, where ```VOXEL_INSTALL_PREFIX``` is the installation prefix for
 Voxel. The ```find_package``` script defines the following Cmake variables:
@@ -92,30 +92,30 @@ Voxel. The ```find_package``` script defines the following Cmake variables:
 Assuming that ```find_packge(Voxel ...)``` has been run, to link against a
 single library from cmake, simple do (see list of components below):
 
-```cmake
+~~~
 target_link_libraries(Target Voxx::VoxelComponent)
-```
+~~~
 
 where ```VoxelComponent``` is the component to link against. Alternatively,
 to link against numerous components, list the components when using
 ```find_package```:
 
-```cmake
+~~~
 find_package(Voxel COMPONENTS SystemInfo)
-```
+~~~
 
 which populates the ```Voxel_LIBS``` cmake variable with the appropriate library
 definitions. A target can then be linked as follows:
 
-```cmake
+~~~
 target_link_libraries(Target ${Voxel_LIBS})
-```
+~~~
 
 Finally, to link against all the Voxel libraries, use ```Voxel_LIBRARIES```:
 
-```cmake
+~~~
 target_link_libraries(Target ${Voxel_LIRARIES})
-```
+~~~
 
 ### System Info
 
@@ -125,21 +125,21 @@ the system (such as cpu info, gpu info, etc). The component can be linked with
 ```Voxx::VoxelSystemInfo```, or by specifying the component with
 ```find_package```, i.e:
 
-```cmake
+~~~
 # Find only SystemInfo:
 find_package(Voxel COMPONENTS SystemInfo)
 ...
 
 # Link target with SystemInfo:
 target_link_libraries(Target Voxx::VoxelSystemInfo)
-```
+~~~
 
 ## Applications
 
 Voxel provides numerous applications as binaries, they can be built using
-```bash
+~~~sh
 make ApplicationName
-```
+~~~
 after running Cmake as shown above.
 
 ### System Information
