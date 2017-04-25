@@ -11,9 +11,8 @@ Voxel uses Cmake for installation. Some of the applications in the ```apps/```
 directory are used to generate output which can be parsed by Cmake to generate
 definitions which are used to generate ```constexpr``` functions. If the Voxel is
 not already installed, then the application binaries will not be found. When
-installing Voxel for the first time, the installation script compiles the
-```SystemInformation``` application so that the information can be added into the
-C++ source code.
+installing Voxel for the first time, the installation script compiles
+the ```SystemInformation``` application so that the information can be added into the C++ source code.
 
 ### Linux or OSX
 
@@ -26,13 +25,13 @@ The following are the most basic options for installation:
 | BUILD_SHARED_LIBS    | Build libraries as shared         | ON/NONE	   |
 
 __Note:__ The build script automatically appends ```Voxel``` to
-	```CMAKE_INSTALL_PREFIX``` if it __is not__ part of the variable. So
-	```-DCMAKE_INSTALL_PREFIX=/opt``` will install all software to
-	```/opt/Voxel```. If ```Voxel``` __is__ found in the
-	```CMAKE_INSTALL_PREFIX``` variable then the build script __does not__
-	modify the variable, and it is used __as is__. For example,
-	```-DCMAKE_INSTALL_PREFIX=/opt``` and ```-DCMAKE_INSTALL_PREFIX=/opt/Voxel```
-	will both install to ```/opt/Voxel```.
+	        to ```CMAKE_INSTALL_PREFIX``` if it __is not__ part of the variable. So ```-DCMAKE_INSTALL_PREFIX=/opt``` will install all software
+          to ```/opt/Voxel```. If ```Voxel``` __is__ found in the
+	        the ```CMAKE_INSTALL_PREFIX``` variable then the build script
+          __does not__ modify the variable, and it is used __as is__. For
+          example, ```-DCMAKE_INSTALL_PREFIX=/opt```
+          and ```-DCMAKE_INSTALL_PREFIX=/opt/Voxel```will both install
+          to ```/opt/Voxel```.
 
 To build Voxel with __static__ libraries:
 ~~~py

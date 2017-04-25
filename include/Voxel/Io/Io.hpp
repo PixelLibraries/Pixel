@@ -21,6 +21,7 @@
 #include <string>
 
 namespace Voxx    {
+/// The Io namespace defines input and output related functionality.
 namespace Io      {
 
 /// Specialization for Console output.

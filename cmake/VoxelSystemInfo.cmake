@@ -27,7 +27,7 @@ function(voxel_system_info)
   set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
                         /opt/Voxel
                         /usr/local/Voxel)
-  find_package(Voxel)
+  find_package(Voxel QUIET)
 
   # If this is the Utility project, then it's likely that Voxel will not be
   # installed, and therefore some of the applications aren't. In this case,
@@ -91,15 +91,9 @@ function(voxel_system_info)
 
   if(NOT ${SYSTEM_INFO}  MATCHES ".*[a-zA-z].*")
     if (${GENERATE_SYSTEM_INFO})
-      # SystemInformation could not be built =( this should never happen!
-      message("\nError:"                                                ) 
-      message("\n        The SystemInformation executable could not be" )
-      message("         found in ${Voxel_ROOT}/bin. If building the"    )
-      message("         Utility library, this should never happen, and" )
-      message("         if building another library, this is likely"    )
-      message("         because Voxel_ROOT is not found, due to the"    )
-      message("         Utility library not being installed. Please"    )
-      message("         install it and try again :)\n"                  )
+      message("\nWarning:"                                                      )
+      message("\tSystemInformation application was not found, and was not built")
+      message("\twhich should not happen in a release build"                    )
     endif()
 
   # This branch is taken when we have been able to generate valid system

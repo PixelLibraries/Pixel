@@ -16,6 +16,7 @@
 #pragma once
 
 namespace Voxx    {
+/// The System namespace contains system related functionality.
 namespace System  {
 
 /// The printAllInfo function prints the information for all components of

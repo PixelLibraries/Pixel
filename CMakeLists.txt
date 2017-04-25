@@ -63,7 +63,9 @@ install(DIRECTORY   ${Voxel_SOURCE_DIR}/include/Voxel
 
 #==--- Subdirectories -------------------------------------------------------==#
 
-voxel_system_info()
+if (Voxel_FOUND)
+  voxel_system_info()
+endif()
 
 add_subdirectory(apps)
 add_subdirectory(docs)
@@ -71,7 +73,7 @@ add_subdirectory(src)
 
 #==--- Install --------------------------------------------------------------==#
 
-include(CmakePackageConfigHelpers)
+include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
   "${CMAKE_CURRENT_BINARY_DIR}/Voxel/VoxelConfigVersion.cmake"
   VERSION       ${Voxel_VERSION}

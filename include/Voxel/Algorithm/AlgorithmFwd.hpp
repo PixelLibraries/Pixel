@@ -18,6 +18,7 @@
 #include <Voxel/Utility/Portability.hpp>
 #include <tuple>
 
+/// The root namespace for Voxel.
 namespace Voxx {
 
 /// This function invokes a callable function \p c on the element \p element,
