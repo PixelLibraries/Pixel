@@ -21,9 +21,9 @@
 // Include the relevant implementation:
 #if defined(__APPLE__)
 # include "CpuInfoApple.cpp"
-#elif defined(WIN32)
+#elif defined(_WIN32)
 # include "CpuInfoWindows.cpp"
-#elif defined(linux)
+#elif defined(__linux__)
 # include "CpuInfoLinux.cpp"
 #else
 # error Unsupported platform!

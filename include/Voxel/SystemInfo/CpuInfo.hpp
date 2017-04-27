@@ -18,10 +18,97 @@
 #include <Voxel/Algorithm/Algorithm.hpp>
 #include <Voxel/Io/IoFwd.hpp>
 #include <Voxel/Utility/Bitwise.hpp>
+#include <iostream>
+#include <iomanip>
 #include <string>
 
-namespace Voxx   {
-namespace System {
+#if defined(_WIN32)
+# include <limits.h>
+# include <intrin.h>
+#else
+#include <stdint.h>
+#endif
+
+namespace Voxx    {
+namespace System  {
+
+/// The CpuInfo namespace defines functionality to get the features for the
+/// cpu, given inputs from the cpuid function.
+namespace CpuInfo {
+
+/// This Detail namespace wraps specific cpuid calls.
+namespace Detail {
+
+/// The CpuidRegisters wrap the eax, ebx, ecx, edx registers.
+struct CpuIdRegisters {
+  uint32_t values[4];
+
+  /// Default constructor -- sets data to zero.
+  constexpr CpuIdRegisters() : values{0} {}
+
+  /// Fills the register data from 2 64 bits numbers.
+  /// \param[in] eabx Data for a and b registers, stored [a, b].
+  /// \param[in] ecdx Data for c and d regisresr, stores [c, d].
+  constexpr CpuIdRegisters(uint64_t eabx, uint64_t ecdx)
+  : values{static_cast<uint32_t>((eabx >> 32) & 0xFFFFFFFF),
+           static_cast<uint32_t>(eabx & 0xFFFFFFFF        ),
+           static_cast<uint32_t>((ecdx >> 32) & 0xFFFFFFFF),
+           static_cast<uint32_t>(ecdx & 0xFFFFFFFF        )} {}
+
+  /// Fills the register data from 4 32 bits numbers.
+  /// \param[in] eaxVal Data for eax register.
+  /// \param[in] ebxVal Data for ebx register.
+  /// \param[in] ecxVal Data for ecx register.
+  /// \param[in] edxVal Data for edx register.
+  constexpr CpuIdRegisters(
+    uint32_t eaxVal, uint32_t ebxVal, uint32_t ecxVal, uint32_t edxVal)
+  : values{eaxVal, ebxVal, ecxVal, edxVal} {}
+
+  uint32_t*          data() { return &values[0]; }
+  constexpr uint32_t eax() const { return values[0]; }
+  constexpr uint32_t ebx() const { return values[1]; }
+  constexpr uint32_t ecx() const { return values[2]; }
+  constexpr uint32_t edx() const { return values[3]; }
+  
+  /// Prints the raw data:
+  void print() {
+    std::cout << '\n' << "Eax" << " : 0x" << std::hex << eax() << '\n'
+                      << "Ebx" << " : 0x" << std::hex << ebx() << '\n'
+                      << "Ecx" << " : 0x" << std::hex << ecx() << '\n'
+                      << "Edx" << " : 0x" << std::hex << edx() << '\n';
+  }
+};
+
+/// Wrapper around the cpudid function which is cross-platform, and which
+/// returns the filled registers.
+/// \param[in] invocationId The id of the function to call for cpuid.
+inline CpuIdRegisters cpuid(unsigned invocationId) noexcept {
+  CpuIdRegisters registers;
+#if defined(_WIN32)
+  __cpuid(static_cast<int*>(registers.data()), static_cast<int>(invocationId));
+#else
+  // For cpuid function 4, ecx is zero:
+  asm volatile ("cpuid" : "=a" (registers.values[0]),
+                          "=b" (registers.values[1]),
+                          "=c" (registers.values[2]),
+                          "=d" (registers.values[3])
+                        : "a"  (invocationId),
+                          "c"  (0));
+#endif
+  return registers;
+}
+
+} // namespace Detail
+
+/// The CpuId struct wraps the cpuid assembly call to return specific cpu data
+/// which can be passed by the static class functions, for example, to determine
+/// if mmx instructions are supported, one could do:
+/// 
+/// ~~~cpp
+/// auto mmx = CpuInfo::mmx(CpuInfo::CpuId::features())
+/// Returns true of the cpu supports
+
+} // namespace CpuInfo
 
 /// Defines vector instruction support for the CPU.
 enum class IntrinsicSet : uint8_t {

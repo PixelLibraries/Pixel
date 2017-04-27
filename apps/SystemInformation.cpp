@@ -15,8 +15,14 @@
 //==------------------------------------------------------------------------==//
 
 #include <Voxel/SystemInfo/SystemInfo.hpp>
+#include <Voxel/SystemInfo/CpuInfo.hpp>
 
 int main(int argc, char** argv) {
+#if defined(__APPLE__)
   Voxx::System::writeSystemInfo();
+#else
+  auto registers = Voxx::System::CpuInfo::Detail::cpuid(1);
+  registers.print();
+#endif
   return 0;
 }

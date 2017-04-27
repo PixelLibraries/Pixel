@@ -26,7 +26,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/VoxelTest.cmake")
 
 # Define the include directories:
 set(Voxel_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/../../../include")
-set(Voxel_LIBRARY_DIRS "${CMAKE_CURRENT_LIST_DIR}../../../lib"     )
+set(Voxel_LIBRARY_DIRS "${CMAKE_CURRENT_LIST_DIR}/../../../lib"     )
 set(Voxel_LIBRARYS      -lVoxelSystemInfo)
 set(Voxel_DEFINITIONS  -std=c++1z)
 
@@ -41,10 +41,8 @@ foreach(comp ${Voxel_FIND_COMPONENTS})
 		set(Voxel_FOUND False)
 		set(Voxel_NOT_FOUND_MESSAGE "Unsupported component: ${comp}")
 	endif()
-	set(Voxel_LIBRARYS "${Voxel_LIBRARYS} -lVoxel{comp}")
+	set(Voxel_LIBS "${Voxel_LIBS} -lVoxel{comp}")
 	if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/Voxel${comp}Targets.cmake")
 		include("${CMAKE_CURRENT_LIST_DIR}/Voxel${comp}Targets.cmake")
 	endif()
 endforeach()
-
-set(Voxel_LIBS ${Voxel_LIBRARIES})
