@@ -21,6 +21,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <stdexcept>
 
 #if defined(_WIN32)
 # include <limits.h>
@@ -41,7 +42,7 @@ namespace Detail {
 
 /// The CpuidRegisters wrap the eax, ebx, ecx, edx registers.
 struct CpuIdRegisters {
-  uint32_t values[4];
+  uint32_t values[4]; //!< The values of the register data.
 
   /// Default constructor -- sets data to zero.
   constexpr CpuIdRegisters() : values{0} {}
@@ -51,9 +52,9 @@ struct CpuIdRegisters {
   /// \param[in] ecdx Data for c and d regisresr, stores [c, d].
   constexpr CpuIdRegisters(uint64_t eabx, uint64_t ecdx)
   : values{static_cast<uint32_t>((eabx >> 32) & 0xFFFFFFFF),
-           static_cast<uint32_t>(eabx & 0xFFFFFFFF        ),
+           static_cast<uint32_t>(eabx         & 0xFFFFFFFF),
            static_cast<uint32_t>((ecdx >> 32) & 0xFFFFFFFF),
-           static_cast<uint32_t>(ecdx & 0xFFFFFFFF        )} {}
+           static_cast<uint32_t>(ecdx         & 0xFFFFFFFF)} {}
 
   /// Fills the register data from 4 32 bits numbers.
   /// \param[in] eaxVal Data for eax register.
@@ -64,10 +65,16 @@ struct CpuIdRegisters {
     uint32_t eaxVal, uint32_t ebxVal, uint32_t ecxVal, uint32_t edxVal)
   : values{eaxVal, ebxVal, ecxVal, edxVal} {}
 
-  uint32_t*          data() { return &values[0]; }
+  /// Returns a raw pointer to the register data.
+  uint32_t* data() { return &values[0]; }
+
+  /// Returns the data in the eax register.
   constexpr uint32_t eax() const { return values[0]; }
+  /// Returns the data in the ebx register.
   constexpr uint32_t ebx() const { return values[1]; }
+  /// Returns the data in the ecx register.
   constexpr uint32_t ecx() const { return values[2]; }
+  /// Returns the data in the edx register.
   constexpr uint32_t edx() const { return values[3]; }
   
   /// Prints the raw data:
@@ -88,15 +95,58 @@ inline CpuIdRegisters cpuid(unsigned invocationId) noexcept {
   __cpuid(static_cast<int*>(registers.data()), static_cast<int>(invocationId));
 #else
   // For cpuid function 4, ecx is zero:
-  asm volatile ("cpuid" : "=a" (registers.values[0]),
-                          "=b" (registers.values[1]),
-                          "=c" (registers.values[2]),
-                          "=d" (registers.values[3])
-                        : "a"  (invocationId),
-                          "c"  (0));
+  asm volatile (
+    "cpuid" 
+      : "=a" (registers.values[0]), "=b" (registers.values[1]),
+        "=c" (registers.values[2]), "=d" (registers.values[3])
+      : "a"  (invocationId), "c" (0));
 #endif
   return registers;
 }
+
+struct CpuProperties {
+ public:
+  static CpuProperties create() {
+    if (Created)
+      throw std::logic_error{"Attempt to recreate cpuinfo"};
+    Created = true;
+    return CpuProperties{};
+  }
+
+  ~CpuProperties() { Created = false; }
+
+  static inline bool mmx() noexcept {
+    return property(InfoAndFeatures.edx(), 23);
+  }
+
+  static inline bool sse() noexcept {
+    return property(InfoAndFeatures.edx(), 25);
+  }
+
+  static inline bool sse2() noexcept {
+    return property(InfoAndFeatures.edx(), 26);
+  }
+
+ private:
+  static thread_local CpuIdRegisters InfoAndFeatures;
+  static thread_local CpuIdRegisters CacheAndTlb;
+  static thread_local CpuIdRegisters ThreadAndCoreTopology;
+  static thread_local CpuIdRegisters ExtendedFeatures;
+  static thread_local bool           Created;
+
+  static bool property(uint32_t reg, uint32_t shift) noexcept {
+    return (reg >> shift) & 0x01;
+  }
+};
+
+/// The CpuProperty enum defines the invocation ids of the cpuid functions for
+/// querying different properties.
+enum Property : uint8_t {
+  BasicFeatures      = 0x01, //!< Processor info and feature bits.
+  Cache              = 0x02, //!< Cache and TLB capabilities.
+  Topology           = 0x04, //!< Cores and cache topology.
+  AdditionalFeatures = 0x07, //!< Additional features.
+};
 
 } // namespace Detail
 

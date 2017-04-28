@@ -32,6 +32,26 @@
 namespace Voxx    {
 namespace System  {
 
+namespace CpuInfo {
+namespace Detail  {
+
+// Initialize CpuProperties variables:
+thread_local CpuIdRegisters 
+CpuProperties::InfoAndFeatures = cpuid(BasicFeatures);
+
+thread_local CpuIdRegisters
+CpuProperties::CacheAndTlb = cpuid(Cache);
+
+thread_local CpuIdRegisters
+CpuProperties::ThreadAndCoreTopology  = cpuid(Topology);
+
+thread_local CpuIdRegisters
+CpuProperties::ExtendedFeatures = cpuid(AdditionalFeatures);
+
+thread_local bool CpuProperties::Created = false;
+
+}} // namespace CpuInfo::Detail
+
 std::string intrinsicAsString(IntrinsicSet intrinsic) {
   switch (intrinsic) {
     case IntrinsicSet::Avx2 : return "AVX 2.0"  ;
