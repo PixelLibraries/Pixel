@@ -33,14 +33,10 @@
 namespace Voxx    {
 namespace System  {
 
-/// The CpuInfo namespace defines functionality to get the features for the
-/// cpu, given inputs from the cpuid function.
-namespace CpuInfo {
-
-/// This Detail namespace wraps specific cpuid calls.
+/// This namespace includes helper functionality for System related components.
 namespace Detail {
 
-/// The CpuidRegisters wrap the eax, ebx, ecx, edx registers.
+/// The CpuidRegisters class wrap the eax, ebx, ecx, edx registers.
 struct CpuIdRegisters {
   uint32_t values[4]; //!< The values of the register data.
 
@@ -86,10 +82,21 @@ struct CpuIdRegisters {
   }
 };
 
+/// The TopologyMask struct defines a set of masks which define the system
+/// processor topology.
+struct TopologyMasks {
+  unsigned smtMask;
+  unsigned packageMask;
+  unsigned coreMask;
+  unsigned packageMaskShift;
+  unsigned smtMaskWidth;
+};
+
 /// Wrapper around the cpudid function which is cross-platform, and which
 /// returns the filled registers.
 /// \param[in] invocationId The id of the function to call for cpuid.
-inline CpuIdRegisters cpuid(unsigned invocationId) noexcept {
+inline CpuIdRegisters 
+cpuid(unsigned invocationId, unsigned subfunction = 0) noexcept {
   CpuIdRegisters registers;
 #if defined(_WIN32)
   __cpuid(static_cast<int*>(registers.data()), static_cast<int>(invocationId));
@@ -99,66 +106,235 @@ inline CpuIdRegisters cpuid(unsigned invocationId) noexcept {
     "cpuid" 
       : "=a" (registers.values[0]), "=b" (registers.values[1]),
         "=c" (registers.values[2]), "=d" (registers.values[3])
-      : "a"  (invocationId), "c" (0));
+      : "a"  (invocationId), "c" (subfunction));
 #endif
   return registers;
 }
 
-struct CpuProperties {
- public:
-  static CpuProperties create() {
-    if (Created)
-      throw std::logic_error{"Attempt to recreate cpuinfo"};
-    Created = true;
-    return CpuProperties{};
-  }
-
-  ~CpuProperties() { Created = false; }
-
-  static inline bool mmx() noexcept {
-    return property(InfoAndFeatures.edx(), 23);
-  }
-
-  static inline bool sse() noexcept {
-    return property(InfoAndFeatures.edx(), 25);
-  }
-
-  static inline bool sse2() noexcept {
-    return property(InfoAndFeatures.edx(), 26);
-  }
-
- private:
-  static thread_local CpuIdRegisters InfoAndFeatures;
-  static thread_local CpuIdRegisters CacheAndTlb;
-  static thread_local CpuIdRegisters ThreadAndCoreTopology;
-  static thread_local CpuIdRegisters ExtendedFeatures;
-  static thread_local bool           Created;
-
-  static bool property(uint32_t reg, uint32_t shift) noexcept {
-    return (reg >> shift) & 0x01;
-  }
-};
-
-/// The CpuProperty enum defines the invocation ids of the cpuid functions for
-/// querying different properties.
-enum Property : uint8_t {
-  BasicFeatures      = 0x01, //!< Processor info and feature bits.
-  Cache              = 0x02, //!< Cache and TLB capabilities.
-  Topology           = 0x04, //!< Cores and cache topology.
-  AdditionalFeatures = 0x07, //!< Additional features.
-};
-
 } // namespace Detail
 
-/// The CpuId struct wraps the cpuid assembly call to return specific cpu data
-/// which can be passed by the static class functions, for example, to determine
-/// if mmx instructions are supported, one could do:
+/// The CpuInfo struct provides information relating to the cpu. The data is
+/// stored statically, per thread. The data can be 'refreshed' through the
+/// refresh method:
 /// 
 /// ~~~cpp
-/// auto mmx = CpuInfo::mmx(CpuInfo::CpuId::features())
-/// Returns true of the cpu supports
+/// CpuInfo::refresh()
+/// ~~~
+/// 
+/// which will refresh the data __for only that thread__. In the single threaded
+/// case this is insignificant. In the multi-threaded case, this is designed to
+/// be used in a thread pool, where the data would be refreshed when the pool is
+/// created.
+/// 
+/// If definitions are fed into the application by the build script, then the
+/// constexpr versions can be used to get the information at compile time.
+/// 
+/// ...
+struct CpuInfo {
+ private:
+  /// Forwarding reference constructor -- deleted by making it private to
+  /// disable the construction of the class. __Note__ here that the modern,
+  /// > c++11 ``delete`` does no work here, as the class is an aggregate class,
+  /// hence we use deletion by private.
+  /// \tparam Ts The types of any potential arguments.
+  template <typename... Ts> CpuInfo(Ts&&...) {};
 
-} // namespace CpuInfo
+ public:
+  /// Refreshes the static data from cpuid.
+  static void refresh() noexcept {
+    using namespace Detail;
+    BasicFeatures    = cpuid(CpuidFunction::Features);
+    CacheInfo        = cpuid(CpuidFunction::CacheCapabilities);
+    ProcTopology     = cpuid(CpuidFunction::ProcessorTopology);
+    ExtendedFeatures = cpuid(CpuidFunction::AdditionalFeatures);
+
+    generateTopologyInfo();
+  }
+
+  /// Returns true if hyperthreading is supported by the cpu.
+  static bool hyperthreading() noexcept {
+    return extract(BasicFeatures.edx(), FeatureBitsEdx::Hyperthreading);
+  }
+
+  /// Returns the number of processors supported by the system.
+  static bool processorCount() {
+    return ProcessorCount;
+  }
+
+  /// Returns true if the cpu supports MMX intrinsics.
+  static bool mmx() noexcept {
+    return extract(BasicFeatures.edx(), FeatureBitsEdx::Mmx);
+  }
+
+  /// Returns true if the cpu supports MMX intrinsics.
+  static bool aes() noexcept {
+    return extract(BasicFeatures.ecx(), FeatureBitsEcx::Aes);
+  }
+
+  /// Returns true if the cpu supports SSE intrinsics.
+  static bool sse() noexcept {
+    return extract(BasicFeatures.edx(), FeatureBitsEdx::Sse);
+  }
+
+  /// Returns true if the cpu supports SSE2 intrinsics.
+  static bool sse2() noexcept {
+    return extract(BasicFeatures.edx(), FeatureBitsEdx::Sse2);
+  }
+
+  /// Returns true if the cpu supports SSE3 intrinsics.
+  static bool sse3() noexcept {
+    return extract(BasicFeatures.ecx(), FeatureBitsEcx::Sse3);
+  }
+
+  /// Returns true if the cpu supports SSSE3 intrinsics.
+  static bool ssse3() noexcept {
+    return extract(BasicFeatures.ecx(), FeatureBitsEcx::Ssse3);
+  }
+
+  /// Returns true if the cpu supports SSE4.1 intrinsics.
+  static bool sse41() noexcept {
+    return extract(BasicFeatures.ecx(), FeatureBitsEcx::Sse41);
+  }
+
+  /// Returns true if the cpu supports SSE4.2 intrinsics.
+  static bool sse42() noexcept {
+    return extract(BasicFeatures.ecx(), FeatureBitsEcx::Sse42);
+  }
+
+  /// Returns true if the cpu supports AVX intrinsics.
+  static bool avx() noexcept {
+    return extract(BasicFeatures.ecx(), FeatureBitsEcx::Avx);
+  }
+
+  /// Returns true if the cpu supports AVX2 intrinsics.
+  static bool avx2() noexcept {
+    return extract(ExtendedFeatures.ebx(), ExtendedFeatureBitsEbx::Avx2);
+  }
+
+  /// Returns true if the cpu supports sse2 intrinsics.
+  static bool avx512() noexcept {
+    return extract(BasicFeatures.ebx(), ExtendedFeatureBitsEbx::Avx512F);
+  }
+
+  /// Displays the information for the cpu.
+  static void display();
+
+ private:
+  /// Register data holding basic cpu feature information.
+  static thread_local Detail::CpuIdRegisters BasicFeatures;
+  /// Register data holding cache information.
+  static thread_local Detail::CpuIdRegisters CacheInfo;
+  /// Register data holding processor and cache topology.
+  static thread_local Detail::CpuIdRegisters ProcTopology;
+  /// Register data holding extended features.
+  static thread_local Detail::CpuIdRegisters ExtendedFeatures;
+  /// Defines the masks which can be used to get the processor topology.
+  static thread_local Detail::TopologyMasks  TopologyData;
+  /// Defines the number of processors in the system.
+  static thread_local int                    ProcessorCount;
+
+  /// The CpuidFunction enum defines the values of the functions to return
+  /// specific results with cpuid.
+  enum CpuidFunction : uint32_t {
+    /// Max leaf index supported by the processor.
+    MaxLeaf            = 0x00000000,
+    /// Basic features supported by the cpu.
+    Features           = 0x00000001,
+    /// Cache and TLB information.
+    CacheCapabilities  = 0x00000002,
+    /// Topology of the processor cores.
+    ProcessorTopology  = 0x00000004,
+    /// Additional features supported by the cpu.
+    AdditionalFeatures = 0x00000007,
+    /// Checks if Leaf B is supported.
+    LeafB              = 0xB
+  };
+
+  /// The FeatureBitsEcx enum defines which bits in the edx register represent
+  /// which features.
+  enum FeatureBitsEcx : uint8_t {
+    Sse3       =  0,   //!< SSE2 instructions.
+    Ssse3      =  9,   //!< Suplemental SSE3 instructions.
+    Fma        = 12,   //!< Fuse multiply add.
+    Sse41      = 19,   //!< SSE4.1 instructions.
+    Sse42      = 20,   //!< SSE4.2 instructions.
+    Aes        = 25,   //!< Aes instructions.
+    Avx        = 28,   //!< AVX instructions.
+    RandGen    = 29,   //!< On chip random number generator.
+    Hypervisor = 30    //!< Running on a hypervisor.
+  };
+
+  /// This FeatureBitsEdx enum defines which bits in the ecx register
+  /// represent which features.
+  enum FeatureBitsEdx : uint8_t {
+    TimstampCounter  =  4,    //!< Time stamp counter.
+    Mmx              = 23,    //!< Multimedia instructions.
+    Sse              = 25,    //!< SSE instructions.
+    Sse2             = 26,    //!< SSE2 instructions.
+    SelfSnoop        = 27,    //!< Cpu supports self snoop.
+    Hyperthreading   = 28,    //!< Hyperthreading support.
+  };
+
+  /// The ExtendedFeatureBitEbx enum defines which bits in the ebx register
+  /// represent which extended features.
+  enum ExtendedFeatureBitsEbx : uint8_t {
+    Avx2       =  5,  //!< AVX2 instructions.
+    Avx512F    = 16,  //!< AVX512 foundation instructions.
+    Avx512Dq   = 17,  //!< AVX512 double and quadword instructions.
+    RandSeed   = 18,  //!< If RDSEED instruction is available.
+    Avx512Ifma = 21,  //!< AVX512 integer fuse multiple add instructions.
+    Avx512Pf   = 26,  //!< AVX512 prefetch instructions.
+    Avx512Er   = 27,  //!< AVX512 exponential and reciprocol instructions.
+    Avx512Cd   = 28,  //!< AVX512 conflict detection instructions.
+    Avx512Bw   = 30,  //!< AVX512 byte and word instructions.
+    Avx512Vl   = 31   //!< AVX512 vector length instructions 
+  };
+
+  /// The ExtendedFeatureBitEcx enum defines which bits in the ecx register
+  /// represent which extended features.
+  enum ExtendedFeatureBitsEcx : uint8_t {
+    Avx512Vbmi =  1,  //!< AVX512 vector bit manipulation instructions.
+    ProcId     = 22,  //!< Read processor id instruction.
+  };
+
+  /// The ExtendedFeatureBitEdx enum defines which bits in the edx register
+  /// represent which extended features.
+  enum ExtendedFeatureBitsEdx : uint8_t {
+    Avx512Nn    = 2,  //!< AVX512 neural network instructions.
+    Avx512Fmaps = 3,  //!< AVX512 multiply accumulation single precision.
+  }; 
+
+  /// Extracts a proprety from register \p reg by shifting the register by \p
+  /// shift amount and extracting the least significant bit.
+  /// \param[in] reg    The register to get a proprety from.
+  /// \param[in] shift  The amount to shift \p reg by, i.e the bit index of the
+  ///                   property.
+  static bool extract(uint32_t reg, uint8_t shift) noexcept {
+    return (reg >> shift) & 0x01;
+  }
+
+  /// Gets the bits between \p start and \p end, inclusive, and returns the
+  /// result.
+  static uint32_t getBits(uint32_t data, uint8_t start, uint8_t end) {
+    return (data >> start) & ((1 << end) - 1); 
+  }
+
+  /// Sets up the topology data structures.
+  static void createTopologyStructures();
+
+  /// Determines the system core and cache topology.
+  static void generateTopologyInfo();
+
+  /// Gets constants if the processor supports leaf B.
+  static void getConstantsLeafB();
+
+  /// Gets constants for legacy mode (processor doesn't support leaf B).
+  static void getConstantsLegacy();
+
+  /// Sets the number of processors in the system.
+  static void findProcessorCount();
+
+};
 
 /// Defines vector instruction support for the CPU.
 enum class IntrinsicSet : uint8_t {
