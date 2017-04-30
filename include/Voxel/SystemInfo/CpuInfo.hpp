@@ -16,8 +16,9 @@
 #pragma once
 
 #include <Voxel/Algorithm/Algorithm.hpp>
+#include <Voxel/Bit/BitManip.hpp>
+#include <Voxel/Bit/BitMask.hpp>
 #include <Voxel/Io/IoFwd.hpp>
-#include <Voxel/Utility/Bitwise.hpp>
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -143,6 +144,7 @@ struct CpuInfo {
   /// Refreshes the static data from cpuid.
   static void refresh() noexcept {
     using namespace Detail;
+    findProcessorCount();
     BasicFeatures    = cpuid(CpuidFunction::Features);
     CacheInfo        = cpuid(CpuidFunction::CacheCapabilities);
     ProcTopology     = cpuid(CpuidFunction::ProcessorTopology);
@@ -153,67 +155,67 @@ struct CpuInfo {
 
   /// Returns true if hyperthreading is supported by the cpu.
   static bool hyperthreading() noexcept {
-    return extract(BasicFeatures.edx(), FeatureBitsEdx::Hyperthreading);
+    return getBit(BasicFeatures.edx(), FeatureBitsEdx::Hyperthreading);
   }
 
   /// Returns the number of processors supported by the system.
-  static bool processorCount() {
+  static std::size_t processorCount() {
     return ProcessorCount;
   }
 
   /// Returns true if the cpu supports MMX intrinsics.
   static bool mmx() noexcept {
-    return extract(BasicFeatures.edx(), FeatureBitsEdx::Mmx);
+    return getBit(BasicFeatures.edx(), FeatureBitsEdx::Mmx);
   }
 
   /// Returns true if the cpu supports MMX intrinsics.
   static bool aes() noexcept {
-    return extract(BasicFeatures.ecx(), FeatureBitsEcx::Aes);
+    return getBit(BasicFeatures.ecx(), FeatureBitsEcx::Aes);
   }
 
   /// Returns true if the cpu supports SSE intrinsics.
   static bool sse() noexcept {
-    return extract(BasicFeatures.edx(), FeatureBitsEdx::Sse);
+    return getBit(BasicFeatures.edx(), FeatureBitsEdx::Sse);
   }
 
   /// Returns true if the cpu supports SSE2 intrinsics.
   static bool sse2() noexcept {
-    return extract(BasicFeatures.edx(), FeatureBitsEdx::Sse2);
+    return getBit(BasicFeatures.edx(), FeatureBitsEdx::Sse2);
   }
 
   /// Returns true if the cpu supports SSE3 intrinsics.
   static bool sse3() noexcept {
-    return extract(BasicFeatures.ecx(), FeatureBitsEcx::Sse3);
+    return getBit(BasicFeatures.ecx(), FeatureBitsEcx::Sse3);
   }
 
   /// Returns true if the cpu supports SSSE3 intrinsics.
   static bool ssse3() noexcept {
-    return extract(BasicFeatures.ecx(), FeatureBitsEcx::Ssse3);
+    return getBit(BasicFeatures.ecx(), FeatureBitsEcx::Ssse3);
   }
 
   /// Returns true if the cpu supports SSE4.1 intrinsics.
   static bool sse41() noexcept {
-    return extract(BasicFeatures.ecx(), FeatureBitsEcx::Sse41);
+    return getBit(BasicFeatures.ecx(), FeatureBitsEcx::Sse41);
   }
 
   /// Returns true if the cpu supports SSE4.2 intrinsics.
   static bool sse42() noexcept {
-    return extract(BasicFeatures.ecx(), FeatureBitsEcx::Sse42);
+    return getBit(BasicFeatures.ecx(), FeatureBitsEcx::Sse42);
   }
 
   /// Returns true if the cpu supports AVX intrinsics.
   static bool avx() noexcept {
-    return extract(BasicFeatures.ecx(), FeatureBitsEcx::Avx);
+    return getBit(BasicFeatures.ecx(), FeatureBitsEcx::Avx);
   }
 
   /// Returns true if the cpu supports AVX2 intrinsics.
   static bool avx2() noexcept {
-    return extract(ExtendedFeatures.ebx(), ExtendedFeatureBitsEbx::Avx2);
+    return getBit(ExtendedFeatures.ebx(), ExtendedFeatureBitsEbx::Avx2);
   }
 
   /// Returns true if the cpu supports sse2 intrinsics.
   static bool avx512() noexcept {
-    return extract(BasicFeatures.ebx(), ExtendedFeatureBitsEbx::Avx512F);
+    return getBit(BasicFeatures.ebx(), ExtendedFeatureBitsEbx::Avx512F);
   }
 
   /// Displays the information for the cpu.
@@ -231,7 +233,12 @@ struct CpuInfo {
   /// Defines the masks which can be used to get the processor topology.
   static thread_local Detail::TopologyMasks  TopologyData;
   /// Defines the number of processors in the system.
-  static thread_local int                    ProcessorCount;
+  static thread_local std::size_t            ProcessorCount;
+
+  /// Defines an affinity mask for the process.
+  static thread_local BitMask                ProcessAffinity;
+  /// Defines an affinity mask for the system. 
+  static thread_local BitMask                SystemAffinity;
 
   /// The CpuidFunction enum defines the values of the functions to return
   /// specific results with cpuid.
@@ -304,20 +311,11 @@ struct CpuInfo {
     Avx512Fmaps = 3,  //!< AVX512 multiply accumulation single precision.
   }; 
 
-  /// Extracts a proprety from register \p reg by shifting the register by \p
-  /// shift amount and extracting the least significant bit.
-  /// \param[in] reg    The register to get a proprety from.
-  /// \param[in] shift  The amount to shift \p reg by, i.e the bit index of the
-  ///                   property.
-  static bool extract(uint32_t reg, uint8_t shift) noexcept {
-    return (reg >> shift) & 0x01;
-  }
-
-  /// Gets the bits between \p start and \p end, inclusive, and returns the
-  /// result.
-  static uint32_t getBits(uint32_t data, uint8_t start, uint8_t end) {
-    return (data >> start) & ((1 << end) - 1); 
-  }
+ public:
+  static void checkAffinity();
+ private:
+  /// Parses the APIC sub IDs.
+  static int parseSubIds();
 
   /// Sets up the topology data structures.
   static void createTopologyStructures();
@@ -334,6 +332,14 @@ struct CpuInfo {
   /// Sets the number of processors in the system.
   static void findProcessorCount();
 
+  /// Binds the execution context to logical cpu i.
+  /// \param[in]  logicalId   The id of the logical cpu to bind the context to.
+  static void bindContext(std::size_t logicalId);
+
+  /// Parses the APIC ID of the logical processor (thread).
+  /// \param[in] id         The id of the logical processsor to parse.
+  /// \param[in] parseCount The total number of threads currentlt parsed.
+  static void parseThreadId(std::size_t id, std::size_t parseCount)
 };
 
 /// Defines vector instruction support for the CPU.

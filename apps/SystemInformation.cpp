@@ -22,6 +22,7 @@ int main(int argc, char** argv) {
   Voxx::System::writeSystemInfo();
 #else
   Voxx::System::CpuInfo::refresh();
+  Voxx::System::CpuInfo::checkAffinity();
   Voxx::System::CpuInfo::display();
 #endif
   return 0;

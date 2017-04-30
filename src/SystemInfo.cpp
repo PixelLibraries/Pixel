@@ -25,6 +25,7 @@
 #elif defined(__linux)
 # include <unistd.h>
 # include <sys/sysctl.h>
+# include <sched.h>
 # include "CpuInfoLinux.cpp"
 #elif defined(_WIN32)
 # include <windows.h>
@@ -47,8 +48,11 @@ thread_local CpuIdRegisters
   CpuInfo::ProcTopology     = cpuid(CpuInfo::CpuidFunction::ProcessorTopology);
 thread_local CpuIdRegisters
   CpuInfo::ExtendedFeatures = cpuid(CpuInfo::CpuidFunction::AdditionalFeatures);
-thread_local int CpuInfo::ProcessorCount = 1;
+thread_local std::size_t   CpuInfo::ProcessorCount = 1;
 thread_local TopologyMasks CpuInfo::TopologyData{};
+thread_local BitMask       CpuInfo::ProcessAffinity{0};
+thread_local BitMask       CpuInfo::SystemAffinity{0};
+
 
 void CpuInfo::display() {
   using namespace Voxx::Io;
@@ -78,7 +82,9 @@ void CpuInfo::findProcessorCount() {
   ProcessorCount = sysinfo.dwNumberOfProcessors;
 #elif defined(__linux__) || (__APPLE__)
   // This version works only for osx >= 10.4
+  // Gets the number of online processors.
   ProcessorCount = sysconf(_SC_NPROCESSORS_ONLN);
+  std::cout << "PC: " << ProcessorCount << "\n";
 #else
   int mib[4];
   std::size_t length = sizeof(ProcessorCount);
@@ -96,6 +102,72 @@ void CpuInfo::findProcessorCount() {
       ProcessorCount = 1;
   }
 #endif
+}
+
+void CpuInfo::checkAffinity() {
+  ProcessAffinity.grow(ProcessorCount);
+  SystemAffinity.grow(ProcessorCount);
+#if defined(__linux__)
+  cpu_set_t availableMask;
+  sched_getaffinity(0, sizeof(availableMask), &availableMask);
+  for (std::size_t i = 0; i < processorCount(); ++i) {
+    if (CPU_ISSET(i, &availableMask) == 0) {
+      // throw AffinityError{};
+    } else {
+      processAffinity[i] = true;
+      systemAffinity[i]  = true;
+    }
+  }
+
+  ProcessAffinity.print();
+  std::cout << "\n";
+  SystemAffinity.print();
+  std::cout << "\n";
+#else
+
+#endif
+}
+
+void CpuInfo::bindContext(std::size_t logicalId) {
+#if defined(__linux__)
+  cpu_set_t currentCpu;
+
+  // Clear the cpu set and then add the cpu for logicalId to the set.
+  CPU_ZERO(&currentCpu);
+  CPU_SET(logicalId, &currentCpu);
+  if (!sched_setaffinity(0, sizeof(currentCpu), &currentCpu)) {
+    // throw AffinityError{};
+  }
+#else
+#endif
+}
+
+
+void CpuInfo::parseThreadId(std::size_t id, std::size_t parseCount) {
+  const auto getApicId = [] () {
+    auto regs = cpuid(CpuidFunction::MaxLeaf);
+
+    // If leaf b is supported, then we can return x2APPIC ID:
+    if (regs.eax() >= CpuidFunction::LeafB) 
+      return cpuid(CpuidFunction::LeafB).edx();
+
+    // Otherwise we need to return a zero extended 8 bit initial id:
+    return getBits(cpuid(CpuidFunction::Features).ebx(), 24, 31);
+  }
+
+}
+
+int CpuInfo::parseSubIds() {
+  int numMappings = 0;
+
+  for (std::size_t i = 0; i < ProcessorCount; ++i) {
+    // Check if logical processor i is valid (note that our BitMask
+    // implementation is contiguous, while the OS specific ones are not). If the
+    // logical processor is valid, we bind it's context:
+    if (ProcessAffinity[i])
+      bindContext(i);
+  } 
+  return numMappings;
 }
 
 void CpuInfo::generateTopologyInfo() {
