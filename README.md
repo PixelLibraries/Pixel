@@ -54,20 +54,20 @@ cmake -DCMAKE_BUILD_TYPE=Release  \
 sudo make install
 ~~~
 
-Which will install the library to ```/opt/Voxel```, after which 
-```make {component}``` will make any of the components.
+Which will install the library to ```/opt/Voxel```, after
+which ```make {component}``` will make any of the components.
 
 ## Components
 
 Components are the header files and built libraries that the part of the Voxel
-repository. Using them is as simple as including the relevant header from
-```include/Voxel/Component``` and linking against the library, if there is one.
+repository. Using them is as simple as including the relevant header
+from ```include/Voxel/Component``` and linking against the library, if there is one.
 
 ### CMake FindPackage
 
-When installing Voxel, a VoxelConfig.cmake file is generated and installed in
-```CMAKE_INSTALL_PREFIX/lib/cmake/Voxel```, which allows other libraries to use
-Voxel. To ensure that the VoxelConfig.cmake package is found, add the Voxel
+When installing Voxel, a VoxelConfig.cmake file is generated and installed
+in ```CMAKE_INSTALL_PREFIX/lib/cmake/Voxel```, which allows other libraries to 
+use Voxel. To ensure that the VoxelConfig.cmake package is found, add the Voxel
 intallation path to the ```CMAKE_PREFIX_PATH``` variable when using Voxel. In
 the CMakeLists.txt file, add the following:
 
@@ -97,8 +97,8 @@ target_link_libraries(Target Voxx::VoxelComponent)
 ~~~
 
 where ```VoxelComponent``` is the component to link against. Alternatively,
-to link against numerous components, list the components when using
-```find_package```:
+to link against numerous components, list the components when
+using ```find_package```:
 
 ~~~
 find_package(Voxel COMPONENTS SystemInfo)
@@ -148,7 +148,7 @@ The system information component application (```bin/SystemInformation``` after
 installation) displays the system information to the console. Example output
 is the following:
 
-```
+~~~
 |==--- Cpu Features: --------------------------------------------------------==|
 | Cores                     :                                                4 |
 | Threads                   :                                                8 |
@@ -246,7 +246,7 @@ is the following:
 | Associativity             :                                               16 |
 | Sets                      :                                             8192 |
 |==--------------------------------------------------------------------------==|
-```
+~~~
 
 ## Licensing
 
