@@ -16,29 +16,31 @@
 #pragma once
 
 #include <type_traits>
+#include <iostream>
 
 namespace Voxx {
 
 /// Sets the bit at position \p n in \p data to the value \p value.
 /// \tparam T The type of the data.
 template <typename T>
-constexpr inline void setBit(T&& data, uint8_t n, bool value) noexcept {
-  data ^= (-value ^ data) & (1 << n);
+constexpr inline void setBit(T& data, uint8_t n, bool value) noexcept {
+  data ^= (-value ^ data) & (1ul << n);
 }
 
 /// Gets the bit at position \p n in \p data.
 /// \tparam T The type of the data.
 template <typename T>
-constexpr inline bool getBit(T&& data, uint8_t n) noexcept {
-  return data >> n;
+constexpr inline bool getBit(T data, uint8_t n) noexcept {
+  return (data >> n) & 0x01 ;
 }
 
 /// Gets the bits between \p start and \p end, inclusive, and returns the
 /// result.
 /// \tparam T The type of the data.
 template <typename T>
-constexpr inline T getBits(T&& data, uint8_t start, uint8_t end) noexcept {
-  return (data >> start) & ((1 << end) - 1); 
+constexpr inline T getBits(T data, uint8_t start, uint8_t end) noexcept {
+//  return (data >> start) & ((1 << end) - 1); 
+  return (data >> start) & ((1ul << (end - start + 1)) - 1); 
 }
 
 /// Computes the value with only the least significant bit set.
@@ -46,7 +48,7 @@ constexpr inline T getBits(T&& data, uint8_t start, uint8_t end) noexcept {
 /// \tparam     T      The type of the value.
 /// Returns the value with only the first non zero bit set.
 template <typename T>
-constexpr inline std::decay_t<T> leastSetBitOnly(T&& value) noexcept {
+constexpr inline std::decay_t<T> leastSetBitOnly(T value) noexcept {
   return value & ~(value - 1);
 }
 

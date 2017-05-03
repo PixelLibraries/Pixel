@@ -9,7 +9,7 @@ was then brought here as it's likely useful in multiple places.
 
 Voxel uses Cmake for installation. Some of the applications in the ```apps/```
 directory are used to generate output which can be parsed by Cmake to generate
-definitions which are used to generate ```constexpr``` functions. If the Voxel is
+definitions which are used to generate ```constexpr``` functions. If Voxel is
 not already installed, then the application binaries will not be found. When
 installing Voxel for the first time, the installation script compiles
 the ```SystemInformation``` application so that the information can be added into the C++ source code.
@@ -63,7 +63,7 @@ Components are the header files and built libraries that the part of the Voxel
 repository. Using them is as simple as including the relevant header from
 ```include/Voxel/Component``` and linking against the library, if there is one.
 
-### Find Package for Voxel
+### CMake FindPackage
 
 When installing Voxel, a VoxelConfig.cmake file is generated and installed in
 ```CMAKE_INSTALL_PREFIX/lib/cmake/Voxel```, which allows other libraries to use
@@ -76,8 +76,9 @@ set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH} VOXEL_INSTALL_PREFIX")
 find_package(Voxel)
 ~~~
 
-to find Voxel, where ```VOXEL_INSTALL_PREFIX``` is the installation prefix for
-Voxel. The ```find_package``` script defines the following Cmake variables:
+to allow CMake to find Voxel, where ```VOXEL_INSTALL_PREFIX``` is the
+installation prefix for Voxel. The ```find_package``` script defines the
+following Cmake variables:
 
 | Variable             | Description                                              |
 |:---------------------|:---------------------------------------------------------|
@@ -119,10 +120,10 @@ target_link_libraries(Target ${Voxel_LIRARIES})
 ### System Info
 
 The system information component (at ```include/Voxel/SystemInfo/```)
-defines cross-platform functionality to get information for various components of
-the system (such as cpu info, gpu info, etc). The component can be linked with
-```Voxx::VoxelSystemInfo```, or by specifying the component with
-```find_package```, i.e:
+defines cross-platform functionality to get information for various components
+of the system (such as cpu info, gpu info, etc). The component can be linked
+with ```Voxx::VoxelSystemInfo```, or by specifying the component
+with ```find_package```, i.e:
 
 ~~~
 # Find only SystemInfo:
@@ -144,9 +145,111 @@ after running Cmake as shown above.
 ### System Information
 
 The system information component application (```bin/SystemInformation``` after
-installation) displays the system information to the console.
+installation) displays the system information to the console. Example output
+is the following:
+
+```
+|==--- Cpu Features: --------------------------------------------------------==|
+| Cores                     :                                                4 |
+| Threads                   :                                                8 |
+| Threads Per Core          :                                                2 |
+| Hyperthreading            :                                                1 |
+| MMX     Instructions      :                                                1 |
+| AES     Instructions      :                                                1 |
+| SSE     Instructions      :                                                1 |
+| SSE2    Instructions      :                                                1 |
+| SSE3    Instructions      :                                                1 |
+| SSSE3   Instructions      :                                                1 |
+| SSE41   Instructions      :                                                1 |
+| SSE42   Instructions      :                                                1 |
+| AVX     Instructions      :                                                1 |
+| AVX2    Instructions      :                                                1 |
+| AVX512F Instructions      :                                                0 |
+|==--- Thread Information: --------------------------------------------------==|
+| APIC ID                   :                                                0 |
+| Package Number            :                                                0 |
+| Core    Number            :                                                0 |
+| Thread  Number            :                                                0 |
+|==--------------------------------------------------------------------------==|
+| APIC ID                   :                                                2 |
+| Package Number            :                                                0 |
+| Core    Number            :                                                1 |
+| Thread  Number            :                                                0 |
+|==--------------------------------------------------------------------------==|
+| APIC ID                   :                                                4 |
+| Package Number            :                                                0 |
+| Core    Number            :                                                2 |
+| Thread  Number            :                                                0 |
+|==--------------------------------------------------------------------------==|
+| APIC ID                   :                                                6 |
+| Package Number            :                                                0 |
+| Core    Number            :                                                3 |
+| Thread  Number            :                                                0 |
+|==--------------------------------------------------------------------------==|
+| APIC ID                   :                                                1 |
+| Package Number            :                                                0 |
+| Core    Number            :                                                0 |
+| Thread  Number            :                                                1 |
+|==--------------------------------------------------------------------------==|
+| APIC ID                   :                                                3 |
+| Package Number            :                                                0 |
+| Core    Number            :                                                1 |
+| Thread  Number            :                                                1 |
+|==--------------------------------------------------------------------------==|
+| APIC ID                   :                                                5 |
+| Package Number            :                                                0 |
+| Core    Number            :                                                2 |
+| Thread  Number            :                                                1 |
+|==--------------------------------------------------------------------------==|
+| APIC ID                   :                                                7 |
+| Package Number            :                                                0 |
+| Core    Number            :                                                3 |
+| Thread  Number            :                                                1 |
+|==--- Cache Information: ---------------------------------------------------==|
+| Type                      :                                             Data |
+| Level                     :                                                1 |
+| Cores per Package         :                                                8 |
+| Max Thread Sharing        :                                                2 |
+| Size (kB)                 :                                               32 |
+| Line Size (B)             :                                               64 |
+| Partitions                :                                                1 |
+| Associativity             :                                                8 |
+| Sets                      :                                               64 |
+|==--------------------------------------------------------------------------==|
+| Type                      :                                      Instruction |
+| Level                     :                                                1 |
+| Cores per Package         :                                                8 |
+| Max Thread Sharing        :                                                2 |
+| Size (kB)                 :                                               32 |
+| Line Size (B)             :                                               64 |
+| Partitions                :                                                1 |
+| Associativity             :                                                8 |
+| Sets                      :                                               64 |
+|==--------------------------------------------------------------------------==|
+| Type                      :                                          Unified |
+| Level                     :                                                2 |
+| Cores per Package         :                                                8 |
+| Max Thread Sharing        :                                                2 |
+| Size (kB)                 :                                              256 |
+| Line Size (B)             :                                               64 |
+| Partitions                :                                                1 |
+| Associativity             :                                                4 |
+| Sets                      :                                             1024 |
+|==--------------------------------------------------------------------------==|
+| Type                      :                                          Unified |
+| Level                     :                                                3 |
+| Cores per Package         :                                                8 |
+| Max Thread Sharing        :                                               16 |
+| Size (kB)                 :                                             8192 |
+| Line Size (B)             :                                               64 |
+| Partitions                :                                                1 |
+| Associativity             :                                               16 |
+| Sets                      :                                             8192 |
+|==--------------------------------------------------------------------------==|
+```
 
 ## Licensing
 
-This librarry is licensed under the MIT license, and is completely free -- you may do whatever you like with it!
+This librarry is licensed under the MIT license, and is completely free -- you
+may do whatever you like with it =)
 

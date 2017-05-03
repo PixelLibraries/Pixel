@@ -26,14 +26,14 @@ namespace System  {
 #if defined(VoxxGpuCount)         // Compile time version
 
 /// Returns the total number of GPUs in the system.
-VoxxDeviceHost static constexpr auto gpuCount() -> int {
+VoxxDeviceHost static constexpr int gpuCount() {
   return VoxxGpuCount;
 }
 
 #else
 
 /// Returns the total number of GPUs in the system.
-VoxxDeviceHost static auto gpuCount() -> int {
+VoxxDeviceHost static int gpuCount() {
 #if defined(VoxxCudaSupported)
   int deviceCount = 0;
   VoxxCudaErrorCheck(cudaGetDeviceCount(&deviceCount));

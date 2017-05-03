@@ -9,19 +9,11 @@
 //==------------------------------------------------------------------------==//
 //
 /// \file  SystemInfo.hpp
-/// \brief This file defines functionality to get system information.
+/// \brief This file defines includes the relevant system related functionality
+///        for all parts of the system.
 //
 //==------------------------------------------------------------------------==//
 
 #pragma once
 
-namespace Voxx    {
-/// The System namespace contains system related functionality.
-namespace System  {
-
-/// The printAllInfo function prints the information for all components of
-/// the system.
-/// \todo Add parameter to specific the mode of writing.
-void writeSystemInfo();
-
-}} // namespace Voxx::System
+#include "CpuInfo.hpp"

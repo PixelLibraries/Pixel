@@ -28,7 +28,7 @@ include_directories(${CUDA_INCLUDE_DIRS} ${Voxel_SOURCE_DIR}/include)
 
 #==--- Libraries ------------------------------------------------------------==#
 
-add_library(VoxelSystemInfo SystemInfo.cpp)
+add_library(VoxelSystemInfo ${Voxel_SOURCE_DIR}/src/System/SystemInfo.cpp)
 install(TARGETS  VoxelSystemInfo
         EXPORT   VoxelLibs
         ARCHIVE  DESTINATION lib

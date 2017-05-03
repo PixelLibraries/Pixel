@@ -38,9 +38,10 @@ class BitMask {
 
   /// Constructor -- sets the initial size of the mask.
   /// \param[in]  initialSize   The initial size of the mask.
-  explicit BitMask(std::size_t initialSize) 
+  /// \param[in]  set           If the mask values are initially set or not.
+  explicit BitMask(std::size_t initialSize, bool set = false) 
   : Data(initialSize / elementsPerBucket +
-         std::min(initialSize % elementsPerBucket, 1ul)),
+         std::min(initialSize % elementsPerBucket, 1ul), set),
     Elements(initialSize) {}
   
   /// Returns the number of bits in the mask.

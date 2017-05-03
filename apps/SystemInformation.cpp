@@ -1,4 +1,4 @@
-//==--- Apps/SystemInformation.cpp ------------------------- -*- C++ -*- ---==//
+//==--- apps/SystemInformation.cpp ------------------------- -*- C++ -*- ---==//
 //            
 //                                    Voxel
 //
@@ -15,15 +15,10 @@
 //==------------------------------------------------------------------------==//
 
 #include <Voxel/SystemInfo/SystemInfo.hpp>
-#include <Voxel/SystemInfo/CpuInfo.hpp>
 
-int main(int argc, char** argv) {
-#if defined(__APPLE__)
-  Voxx::System::writeSystemInfo();
-#else
+int main(void) {
   Voxx::System::CpuInfo::refresh();
-  Voxx::System::CpuInfo::checkAffinity();
-  Voxx::System::CpuInfo::display();
-#endif
+  Voxx::System::CpuInfo::print();
+
   return 0;
 }

@@ -15,14 +15,8 @@
 
 #pragma once
 
-#include <Voxel/Algorithm/Algorithm.hpp>
 #include <Voxel/Bit/BitManip.hpp>
 #include <Voxel/Bit/BitMask.hpp>
-#include <Voxel/Io/IoFwd.hpp>
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <stdexcept>
 
 #if defined(_WIN32)
 # include <limits.h>
@@ -31,13 +25,10 @@
 #include <stdint.h>
 #endif
 
-namespace Voxx    {
-namespace System  {
+namespace Voxx   {
+namespace System {
 
-/// This namespace includes helper functionality for System related components.
-namespace Detail {
-
-/// The CpuidRegisters class wrap the eax, ebx, ecx, edx registers.
+/// The CpuidRegisters struct wrap the eax, ebx, ecx, edx registers.
 struct CpuIdRegisters {
   uint32_t values[4]; //!< The values of the register data.
 
@@ -73,24 +64,19 @@ struct CpuIdRegisters {
   constexpr uint32_t ecx() const { return values[2]; }
   /// Returns the data in the edx register.
   constexpr uint32_t edx() const { return values[3]; }
-  
-  /// Prints the raw data:
-  void print() {
-    std::cout << '\n' << "Eax" << " : 0x" << std::hex << eax() << '\n'
-                      << "Ebx" << " : 0x" << std::hex << ebx() << '\n'
-                      << "Ecx" << " : 0x" << std::hex << ecx() << '\n'
-                      << "Edx" << " : 0x" << std::hex << edx() << '\n';
-  }
 };
 
 /// The TopologyMask struct defines a set of masks which define the system
 /// processor topology.
 struct TopologyMasks {
-  unsigned smtMask;
-  unsigned packageMask;
-  unsigned coreMask;
-  unsigned packageMaskShift;
-  unsigned smtMaskWidth;
+  unsigned threadMask;          //!< A mask for getting the thread number.
+  unsigned packageMask;         //!< A mask for getting the package number.
+  unsigned coreMask;            //!< A mask for getting the core number.
+  unsigned packageMaskShift;    //!< Amount to shift for the package.
+  unsigned threadMaskWidth;     //!< Amount to shift for the threads.
+  
+  /// Creates the topology masks.
+  static TopologyMasks create();
 };
 
 /// Wrapper around the cpudid function which is cross-platform, and which
@@ -112,55 +98,238 @@ cpuid(unsigned invocationId, unsigned subfunction = 0) noexcept {
   return registers;
 }
 
-} // namespace Detail
+/// This namespace defines a simpler interface for common cpuid calls.
+namespace CpuId {
 
-/// The CpuInfo struct provides information relating to the cpu. The data is
-/// stored statically, per thread. The data can be 'refreshed' through the
-/// refresh method:
-/// 
-/// ~~~cpp
-/// CpuInfo::refresh()
-/// ~~~
-/// 
-/// which will refresh the data __for only that thread__. In the single threaded
-/// case this is insignificant. In the multi-threaded case, this is designed to
-/// be used in a thread pool, where the data would be refreshed when the pool is
-/// created.
-/// 
-/// If definitions are fed into the application by the build script, then the
-/// constexpr versions can be used to get the information at compile time.
-/// 
-/// ...
-struct CpuInfo {
- private:
-  /// Forwarding reference constructor -- deleted by making it private to
-  /// disable the construction of the class. __Note__ here that the modern,
-  /// > c++11 ``delete`` does no work here, as the class is an aggregate class,
-  /// hence we use deletion by private.
-  /// \tparam Ts The types of any potential arguments.
-  template <typename... Ts> CpuInfo(Ts&&...) {};
+/// The Functoin enum defines the values of the functions to return
+/// specific results with cpuid.
+enum Function : uint32_t {
+  /// Max leaf index supported by the processor.
+  MaxLeaf            = 0x00000000,
+  /// Basic features supported by the cpu.
+  Features           = 0x00000001,
+  /// Cache and TLB information.
+  CacheCapabilities  = 0x00000002,
+  /// Topology of the processor cores.
+  ProcessorTopology  = 0x00000004,
+  /// Additional features supported by the cpu.
+  AdditionalFeatures = 0x00000007,
+  /// Checks if Leaf B is supported.
+  LeafB              = 0xB
+};
 
+//==--- Functions ----------------------------------------------------------==//
+
+/// Returns the APIC ID for the currently bound core/thread.
+static inline uint32_t apicid() noexcept {
+  auto regs = cpuid(Function::MaxLeaf);
+  // If leaf b is supported, then we can return x2APPIC ID:
+  if (regs.eax() >= Function::LeafB) 
+    return cpuid(Function::LeafB).edx();
+
+  // Otherwise we need to return a zero extended 8 bit initial id:
+  return getBits(cpuid(Function::Features).ebx(), 24, 31);  
+}
+
+/// Returns the max leaf supported for a call to cpuid.
+static inline uint32_t maxleaf() noexcept {
+  return cpuid(Function::MaxLeaf).eax();
+}
+
+/// Returns true of the cpu has support for leaf B.
+static inline bool supportsLeafB() noexcept {
+  return cpuid(Function::LeafB).ebx() != 0;
+}
+
+/// Returns the processor topology raw data.
+/// \param[in]  leaf  The leaf to get the information for.
+static inline CpuIdRegisters processorTopology(uint32_t leaf = 0) noexcept {
+  return cpuid(Function::ProcessorTopology, leaf);
+}
+
+/// Returns register data from which features can be extracted.
+static inline CpuIdRegisters features() noexcept {
+  return cpuid(Function::Features);
+}
+
+/// Returns register data from which extended features can be extracted.
+static inline CpuIdRegisters extendedFeatures() noexcept {
+  return cpuid(Function::AdditionalFeatures);
+}
+
+} // namespace Cpuid
+
+/// The ThreadInfo struct defines infromation for a thread. This is simply a
+/// class which stores the APIC ID of the thread and provides functions to
+/// extract the components from the APIC ID.
+class ThreadInfo {
  public:
-  /// Refreshes the static data from cpuid.
-  static void refresh() noexcept {
-    using namespace Detail;
-    findProcessorCount();
-    BasicFeatures    = cpuid(CpuidFunction::Features);
-    CacheInfo        = cpuid(CpuidFunction::CacheCapabilities);
-    ProcTopology     = cpuid(CpuidFunction::ProcessorTopology);
-    ExtendedFeatures = cpuid(CpuidFunction::AdditionalFeatures);
+  /// Default constructor -- sets the APIC ID to 0.
+  constexpr ThreadInfo() noexcept : Apicid(0) {}
 
-    generateTopologyInfo();
+  /// Constructor -- sets the APIC ID using the given APIC ID.
+  /// \param[in]  apicid  The APIC ID of the thread.
+  constexpr ThreadInfo(uint32_t apicid) noexcept
+  : Apicid(apicid) {}
+
+  /// Returns the package to which the thread belongs.
+  /// \param[in]  masks The topology masks to use to extract the parameters.
+  constexpr uint32_t package(const TopologyMasks& masks) const noexcept {
+    return (Apicid & masks.packageMask) >> masks.packageMaskShift;
   }
+
+  /// Returns the core number to which the thread belongs.
+  /// \param[in]  masks The topology masks to use to extract the parameters.
+  constexpr uint32_t core(const TopologyMasks& masks) const noexcept {
+    return (Apicid & masks.coreMask) >> masks.threadMaskWidth;
+  }
+
+  /// Returns the number of the thread in the core.
+  /// \param[in]  masks The topology masks to use to extract the parameters.
+  constexpr uint32_t thread(const TopologyMasks& masks) const noexcept {
+    return Apicid & masks.threadMask;
+  }
+
+  /// Prints a summary of the thread information.
+  void print(const TopologyMasks& masks) const;
+
+ private: 
+  uint32_t Apicid;  //!< The apicid for the thread.
+};
+
+/// Defines information related to the cache.
+struct CacheInfo {
+  /// The Type enum defines the type a cache can have.
+  enum class Type : uint8_t {
+    Invalid     = 0x00,   //!< Cache type is invalid.
+    Data        = 0x01,   //!< Cache is a data cache.
+    Instruction = 0x02,   //!< Cache is an instruction cache.
+    Unified     = 0x03    //!< Cache is both data and instruction.
+  };
+
+  /// Default constructor -- intiailizes all fields to be zero.
+  constexpr CacheInfo() noexcept
+  : MainProperties(0), LineProperties(0), Sets(0) {}
+
+  /// Constuctor -- creates the cache information from the register values
+  /// returned by a call to cpuid(CpuidFunction::ProcessorTopology, subleaf)
+  /// where the subleaf is the leaf to get the information for,
+  /// \param[in] regs   The registers to use to get the cache information.
+  constexpr CacheInfo(CpuIdRegisters regs) noexcept
+  : MainProperties(regs.eax()), LineProperties(regs.ebx()), Sets(regs.ecx()) {}
+
+  /// Returns the asociativity of the cache.
+  constexpr uint32_t associativity() const noexcept {
+    return getBits(LineProperties, 22, 31) + 1;
+  }
+
+  /// Returns the number of partiions (blocks) in the cache.
+  constexpr uint32_t partitions() const noexcept {
+    return getBits(LineProperties, 12, 21) + 1;
+  }
+
+  /// Returns the size of a cache line, in bytes.
+  constexpr uint32_t lineSize() const noexcept {
+    return getBits(LineProperties, 0, 11) + 1;
+  }
+
+  /// Returns the number of sets in the cache.
+  constexpr uint32_t sets() const noexcept {
+    return Sets + 1;
+  }
+
+  /// Returns the size, in bytes, of the cache.
+  constexpr std::size_t size() const noexcept {
+    return lineSize() * partitions() * associativity() * sets();
+  }
+
+  /// Returns the level of the cache.
+  constexpr uint8_t level() const noexcept {
+    return getBits(MainProperties, 5, 7);
+  }
+
+  /// Returns the maximum number of threads sharing the cache.
+  constexpr uint32_t maxSharing() const noexcept {
+    return getBits(MainProperties, 14, 25) + 1;
+  }
+
+  /// Returns the core and package information.
+  constexpr uint32_t coresPerPackage() const noexcept {
+    return getBits(MainProperties, 26, 31) + 1;
+  }
+
+  /// Returns the type of the cache.
+  constexpr Type type() const noexcept {
+    return static_cast<Type>(getBits(MainProperties, 0, 4));
+  }
+
+  /// Returns true if the cache is a data cache, i.e it is either a data cache
+  /// or a unified cache.
+  constexpr bool isDataCache() const noexcept {
+    return type() == Type::Data || type() == Type::Unified;
+  }
+
+  /// Converts the type of the cache to its name value.
+  std::string typeAsName() const;
+
+  /// Prints the cache information.
+  void print() const;
+
+  uint32_t MainProperties;  //!< General properties of the cache.
+  uint32_t LineProperties;  //!< Properties of a cache line.
+  uint32_t Sets;            //!< The number of sets in the cache.
+};
+
+/// The HardwareInfo struct defines the number of packages (or sockets), cores
+/// (the number of hardware cores), and logical cores (the number of threads) in
+/// the system.
+struct CpuInfo {
+  /// Alias for the type of container used to store thread information.
+  using ThreadInfoContainer  = std::vector<ThreadInfo>;
+  /// Alias for the type of container used to store cache information.
+  using CacheInfoContainer   = std::vector<CacheInfo>;
+  /// Alias for the type of sharing information container.
+  using SharingInfoContainer = std::vector<uint32_t>;
+
+  /// Refreshes the cpu information. This can be used in situations where the
+  /// system may have changed (i.e a server where more nodes have become
+  ///  available).
+  static void refresh();
+
+  //==--- Properties -------------------------------------------------------==//
+
+  /// Returns the number of physical cores.
+  static uint32_t cores() noexcept {
+    return PhysicalCores;
+  }
+
+  /// Returns the number of threads per core.
+  static uint32_t threadsPerCore() noexcept {
+    return threads() / cores();
+  }
+
+  /// Returns the number of logical threads for the cpu.
+  static uint32_t threads() noexcept {
+    return Threads.size();
+  }
+
+  /// Returns the number of bytes in a cache line.
+  static uint32_t cacheLineSize() noexcept {
+    return Caches[0].lineSize();
+  }
+
+  /// Returns the information for a level of the cache.
+  /// \param[in] level The level to get the cache info for (1 = L1, 2 = L2, 
+  //                   3 = L3 ...)
+  static CacheInfo cacheInfo(std::size_t level = 1) {
+    return Caches[level - 1];
+  }
+
+  //==--- Features ---------------------------------------------------------==//
 
   /// Returns true if hyperthreading is supported by the cpu.
   static bool hyperthreading() noexcept {
     return getBit(BasicFeatures.edx(), FeatureBitsEdx::Hyperthreading);
-  }
-
-  /// Returns the number of processors supported by the system.
-  static std::size_t processorCount() {
-    return ProcessorCount;
   }
 
   /// Returns true if the cpu supports MMX intrinsics.
@@ -215,47 +384,71 @@ struct CpuInfo {
 
   /// Returns true if the cpu supports sse2 intrinsics.
   static bool avx512() noexcept {
-    return getBit(BasicFeatures.ebx(), ExtendedFeatureBitsEbx::Avx512F);
+    return getBit(ExtendedFeatures.ebx(), ExtendedFeatureBitsEbx::Avx512F);
   }
 
-  /// Displays the information for the cpu.
-  static void display();
+  //==--- Utilities --------------------------------------------------------==//
+ 
+  /// Returns the number of __cores__ (not threads) shared by the \p level th
+  /// level of cache which is shared by __cores__. Where \p level is __0__ the
+  /// number of cores sharing the first level of cache which has core sharing
+  /// is returned.
+  /// 
+  /// I.e if L1 and L2 are only shared by threads on a core, then L3 is the
+  /// first level of core sharing, and using \p level ``= 0`` will return the
+  /// number of cores which share L3.
+  /// 
+  /// \param[in] level  The level for which to get the number of shared cores
+  ///                   for.
+  static uint32_t sharedCores(uint32_t level = 0);
+
+  /// Returns the number of 
+
+  /// Prints all the cpu information.
+  static void print();
+
+  /// Get a random index of a core which shares a cache level.
+  //uint32_t randSharedCore(uint32_t coreIndex) const;
 
  private:
+  /// Forwarding reference constructor -- deleted by making it private to
+  /// disable the construction of the class. __Note__ here that the modern,
+  /// > c++11 ``delete`` does no work here, as the class is an aggregate class,
+  /// hence we use deletion by private.
+  /// \tparam Ts The types of any potential arguments.
+  template <typename... Ts> CpuInfo(Ts&&...) {};
+
+  /// Properties for each of the system threads.
+  static thread_local ThreadInfoContainer  Threads;
+  /// Properties for each of the levels of cache.
+  static thread_local CacheInfoContainer   Caches;
+  /// Number of threads which share each level of cache.
+  static thread_local SharingInfoContainer SharingSizes;
   /// Register data holding basic cpu feature information.
-  static thread_local Detail::CpuIdRegisters BasicFeatures;
-  /// Register data holding cache information.
-  static thread_local Detail::CpuIdRegisters CacheInfo;
-  /// Register data holding processor and cache topology.
-  static thread_local Detail::CpuIdRegisters ProcTopology;
-  /// Register data holding extended features.
-  static thread_local Detail::CpuIdRegisters ExtendedFeatures;
-  /// Defines the masks which can be used to get the processor topology.
-  static thread_local Detail::TopologyMasks  TopologyData;
-  /// Defines the number of processors in the system.
-  static thread_local std::size_t            ProcessorCount;
+  static thread_local CpuIdRegisters       BasicFeatures;
+  /// Register data holding extended cpu feature information.
+  static thread_local CpuIdRegisters       ExtendedFeatures;
+  /// Masks used to getermine the topology of the system processors and cache.
+  static thread_local TopologyMasks        Masks;
+  /// The number of CPU packages in the system.
+  static thread_local std::size_t          Packages;
+  /// The number of physical cores in the system.
+  static thread_local std::size_t          PhysicalCores;
+  /// The index of the first level of cache shared by physical cpus.
+  static thread_local std::size_t          CoreSharingLevel;
 
-  /// Defines an affinity mask for the process.
-  static thread_local BitMask                ProcessAffinity;
-  /// Defines an affinity mask for the system. 
-  static thread_local BitMask                SystemAffinity;
+  /// Sets the number of threads in the system.
+  static void getThreadCount();
 
-  /// The CpuidFunction enum defines the values of the functions to return
-  /// specific results with cpuid.
-  enum CpuidFunction : uint32_t {
-    /// Max leaf index supported by the processor.
-    MaxLeaf            = 0x00000000,
-    /// Basic features supported by the cpu.
-    Features           = 0x00000001,
-    /// Cache and TLB information.
-    CacheCapabilities  = 0x00000002,
-    /// Topology of the processor cores.
-    ProcessorTopology  = 0x00000004,
-    /// Additional features supported by the cpu.
-    AdditionalFeatures = 0x00000007,
-    /// Checks if Leaf B is supported.
-    LeafB              = 0xB
-  };
+  /// Gets the number of physical cores. This must only be called one the number
+  /// of threads is known.
+  static void getCoreCount();
+
+  /// Gets a mask for the threads which need to be parsed.
+  static BitMask getAffinityMask();
+
+  /// Gets the cache information.
+  static void getCacheInfo();
 
   /// The FeatureBitsEcx enum defines which bits in the edx register represent
   /// which features.
@@ -310,206 +503,6 @@ struct CpuInfo {
     Avx512Nn    = 2,  //!< AVX512 neural network instructions.
     Avx512Fmaps = 3,  //!< AVX512 multiply accumulation single precision.
   }; 
-
- public:
-  static void checkAffinity();
- private:
-  /// Parses the APIC sub IDs.
-  static int parseSubIds();
-
-  /// Sets up the topology data structures.
-  static void createTopologyStructures();
-
-  /// Determines the system core and cache topology.
-  static void generateTopologyInfo();
-
-  /// Gets constants if the processor supports leaf B.
-  static void getConstantsLeafB();
-
-  /// Gets constants for legacy mode (processor doesn't support leaf B).
-  static void getConstantsLegacy();
-
-  /// Sets the number of processors in the system.
-  static void findProcessorCount();
-
-  /// Binds the execution context to logical cpu i.
-  /// \param[in]  logicalId   The id of the logical cpu to bind the context to.
-  static void bindContext(std::size_t logicalId);
-
-  /// Parses the APIC ID of the logical processor (thread).
-  /// \param[in] id         The id of the logical processsor to parse.
-  /// \param[in] parseCount The total number of threads currentlt parsed.
-  static void parseThreadId(std::size_t id, std::size_t parseCount)
 };
 
-/// Defines vector instruction support for the CPU.
-enum class IntrinsicSet : uint8_t {
-  Avx2    = 0x00,   //!< Intel AVX  2.0 instructions.
-  Avx1    = 0x01,   //!< Intel AVX  1.0 instructions.
-  Sse42   = 0x02,   //!< Intel SSE  4.2 instructions.
-  Sse41   = 0x03,   //!< Intel SSE  4.1 instructions.
-  Ssse3   = 0x04,   //!< Intel SSSE 3.0 instructions.
-  Sse3    = 0x05,   //!< Intel SSE  3.0 instructions.
-  Sse2    = 0x06,   //!< Intel SSE  2.0 instructions.
-  Sse     = 0x07,   //!< Intel SSE  1.0 instructions.
-  Neon    = 0x08,   //!< Arm Neon instructions.
-  Invalid = 0x09    //!< Invalid intrinsic set.
-};  
-
-/// Returns the total number of CPUs in the system.
-std::size_t cpuCount();
-
-/// Returns the total number of physical cores in the system.
-std::size_t physicalCores();
-
-/// Returns the total number of logical cores in the system.
-std::size_t logicalCores();
-
-/// Returns the size of the cache line on the CPU, in bytes.
-std::size_t cachelineSize();
-
-/// Returns the size of the L1 cache.
-std::size_t l1CacheSize();
-
-/// Returns the size of the L2 cache, in bytes.
-std::size_t l2CacheSize();
-
-/// Returns the size of the L3 cache, in bytes.
-std::size_t l3CacheSize();
-
-/// Returns the number of logical cores which share the L1 cache.
-std::size_t l1Sharing();
-
-/// Returns the number of logical cores which share the L2 cache.
-std::size_t l2Sharing();
-
-/// Returns the highest supported set of intrinsics.
-IntrinsicSet intrinsicSet();
-
-/// Returns a string representation of the intrinsics.
-/// \param[in]  intrinsicSet  The intrinsic set to get the string representation
-///                           of.
-std::string intrinsicAsString(IntrinsicSet intrinsicSet);
-
-/// Writes the cpu information for the system.
-/// \todo Add support for the type of output.
-void writesCpuInfo();
-
-/// This namespace contains constexpr versions of the functions, if they are
-/// available. If the function is not available, 0 is returned. This allows
-/// implementations to specialize functions for runtime and compile time, for
-/// example:
-/// 
-/// \code{.cpp}
-/// // Default version, cpuCores is known at compile time:
-/// template <int cpuCores>
-/// inline auto doSomethingImpl() {
-///   // Imprmentation using compile time coreCount ...
-/// }
-/// 
-/// // Runtime version, cpuCount = 0 therefore not known at compile time:
-/// template <>
-/// auto doSomething<System::Cx::UnknownCpuCount>() {
-///   // Implementation using runtime version ...
-/// }
-/// 
-/// // Wrapper function which calls the appropriate implementation:
-/// auto doSomething() {
-///   return doSomethingImpl<System::Cx::cpuCount()>();
-/// }
-/// \endcode
-/// 
-/// With c++17, ```if constexpr(System::Cx::cpuCount) {}``` could also be used.
-namespace Cx {
-
-/// Returns the total number of CPUs in the system.
-static constexpr auto cpuCount() -> std::size_t {
-#if defined(VoxxCpuCount)
-  return VoxxCpuCount;
-#else
-  return 0;
-#endif // VoxxCpuCount
-}
-
-/// Returns the number of physical cores in the system.
-static constexpr auto physicalCores() -> std::size_t {
-#if defined(VoxxPhysicalCores)
-  return VoxxPhysicalCores;
-#else
-  return 0;
-#endif
-}
-
-/// Returns the number of logical cores in the system.
-static constexpr auto logicalCores() -> std::size_t {
-#if defined(VoxxLogicalCores)
-  return VoxxLogicalCores;
-#else
-  return 0;
-#endif
-}
-
-/// Returns the size of a cacheline, in bytes.
-static constexpr auto cachelineSize() -> std::size_t {
-#if defined(VoxxCachelineSize)
-  return VoxxCachelineSize;
-#else
-  return 0;
-#endif
-}
-
-/// Returns the size of the L1 cache, in bytes.
-static constexpr auto l1CacheSize() -> std::size_t {
-#if defined(VoxxL1CacheSize)
-  return VoxxL1CacheSize;
-#else
-  return 0;
-#endif
-}
-
-/// Returns the size of the L2 cache, in bytes.
-static constexpr auto l2CacheSize() -> std::size_t {
-#if defined(VoxxL2CacheSize)
-  return VoxxL2CacheSize;
-#else
-  return 0;
-#endif
-}
-
-/// Returns the size of the L3 cache, in bytes.
-static constexpr auto l3CacheSize() -> std::size_t {
-#if defined(VoxxL2CacheSize)
-  return VoxxL2CacheSize;
-#else
-  return 0;
-#endif
-}
-
-/// Returns the number of logical processors which share the L1 cache.
-static constexpr auto l1Sharing() -> std::size_t {
-#if defined(VoxxL1Sharing)
-  return VoxxL1Sharing;
-#else
-  return 0;
-#endif
-}
-
-/// Returns the number of logical processors which share the L2 cache.
-static constexpr auto l2Sharing() -> std::size_t {
-#if defined(VoxxL2Sharing)
-  return VoxxL2Sharing;
-#else
-  return 0;
-#endif
-}
-
-/// Returns the supported intrinsic set.
-static constexpr auto intrinsicSet() -> IntrinsicSet {
-#if defined(VoxxIntrinsicSet)
-  return static_cast<IntrinsicSet>(VoxxIntrinsicSet);
-#else
-  return IntrinsicSet::Invalid;
-#endif
-}
-
-}}} // namespace Voxx::System::Cx
+}} // namespace Voxx::System
