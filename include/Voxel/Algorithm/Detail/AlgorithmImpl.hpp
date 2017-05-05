@@ -49,6 +49,7 @@ invoke(Callable&& callable, const T& element, const Ts&... elements) {
     invoke(std::forward<Callable>(callable), elements...);
 }
 
+/// This namespace implements algorithmic functionality.
 namespace Detail {
 
 //==--- forEachImpl std::tuple specializations -----------------------------==//

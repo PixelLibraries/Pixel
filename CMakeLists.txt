@@ -23,9 +23,9 @@ endif()
 
 #==--- Options --------------------------------------------------------------==#
 
-set(CMAKE_CXX_COMPILER g++)
+set(CMAKE_CXX_COMPILER clang++)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${Voxel_SOURCE_DIR}/cmake)
-include(VoxelSystemInfo)
+#include(VoxelSystemInfo)
 
 #==--- Packages -------------------------------------------------------------==#
 
@@ -63,9 +63,9 @@ install(DIRECTORY   ${Voxel_SOURCE_DIR}/include/Voxel
 
 #==--- Subdirectories -------------------------------------------------------==#
 
-if (Voxel_FOUND)
-  voxel_system_info()
-endif()
+#if (Voxel_FOUND)
+#  voxel_system_info()
+#endif()
 
 add_subdirectory(apps)
 add_subdirectory(docs)
@@ -104,7 +104,7 @@ install(EXPORT      VoxelLibs
 # This also installs relative to CMAKE_INSTALL_PREFIX:
 install(
   FILES       cmake/VoxelConfig.cmake
-              cmake/VoxelSystemInfo.cmake
+#              cmake/VoxelSystemInfo.cmake
               cmake/VoxelTest.cmake
               "${CMAKE_CURRENT_BINARY_DIR}/Voxel/VoxelConfigVersion.cmake"
   DESTINATION ${ConfigPackageLocation})
