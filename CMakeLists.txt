@@ -25,14 +25,21 @@ endif()
 
 set(CMAKE_CXX_COMPILER clang++)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${Voxel_SOURCE_DIR}/cmake)
-#include(VoxelSystemInfo)
 
 #==--- Packages -------------------------------------------------------------==#
 
 find_package(CUDA)
 if(CUDA_FOUND)
   add_definitions(-DVoxxCudaSupported)
-  set(CXX_CUDA_FLAGS "-Xcuda-ptxas -v")
+  set(CXX_CUDA_FLAGS -Xcuda-ptxas -v -cuda-path=${CUDA_TOOLKIT_ROOT_DIR}
+                     --cuda-gpu-arch=sm_61)
+  if(APPLE)
+    set(CUDA_LIBRARY_DIRS ${CUDA_TOOLKIT_ROOT_DIR}/lib)
+    set(CUDA_LIBS  -lcudart_static -ldl -pthread      )
+  else()
+    set(CUDA_LIBRARY_DIRS ${CUDA_TOOLKIT_ROOT_DIR}/lib64)
+    set(CUDA_LIBS  -lcudart_static -ldl -lrt -pthread   )
+  endif()
 endif(CUDA_FOUND)
 
 #==--- Compiler Flags -------------------------------------------------------==#
@@ -63,13 +70,10 @@ install(DIRECTORY   ${Voxel_SOURCE_DIR}/include/Voxel
 
 #==--- Subdirectories -------------------------------------------------------==#
 
-#if (Voxel_FOUND)
-#  voxel_system_info()
-#endif()
-
 add_subdirectory(apps)
 add_subdirectory(docs)
 add_subdirectory(src)
+add_subdirectory(tests)
 
 #==--- Install --------------------------------------------------------------==#
 
@@ -104,8 +108,7 @@ install(EXPORT      VoxelLibs
 # This also installs relative to CMAKE_INSTALL_PREFIX:
 install(
   FILES       cmake/VoxelConfig.cmake
-#              cmake/VoxelSystemInfo.cmake
-              cmake/VoxelTest.cmake
+              cmake/VoxelAddExecutable.cmake
               "${CMAKE_CURRENT_BINARY_DIR}/Voxel/VoxelConfigVersion.cmake"
   DESTINATION ${ConfigPackageLocation})
 

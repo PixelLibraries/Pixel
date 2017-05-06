@@ -99,9 +99,16 @@ The following is a list of definitions added by Voxel:
 
 | Definition          | Description                   | Defined in Source Code |
 |:--------------------|:------------------------------|:-----------------------|
-| -DVoxxCudaSupported | If cuda is supported by the system | Yes |
-| -std=c++1z          | Support for C++17                  | No  |
-| -O3                 | Aggressive optimization            | No  |
+| -DVoxxCudaSupported | If cuda is supported by the system   | Yes |
+| -std=c++1z          | Support for C++17                    | No  |
+| -O3                 | Aggressive optimization              | No  |
+| --cuda-path={PATH}  | Path to cuda in system, if installed | No  |
+| --cude-gpu-arch={arch} | GPU architecture version          | No  |
+
+__Note__: Voxel will search for cuda and add the apropriate flags, include
+           and link directories, and libraries for cuda. Thus, when using Voxel
+          via ``find_package(Voxel)``, if the system supports cuda, then
+          anything which uses voxel will be compiled with cuda support.
 
 ### Linking
 

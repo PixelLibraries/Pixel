@@ -47,28 +47,29 @@ struct CallableWrapper {
   /// functors or lambds).
   /// \param[in]  callable  The callable object to wrap.
   /// \param[in]  args      The arguments for the callable.    
-  DeviceHost CallableWrapper(CallableType&& callable, WrappedArgsType&& args)
+  VoxxDeviceHost
+  CallableWrapper(CallableType&& callable, WrappedArgsType&& args)
   : CallableObj(std::move(callable)), Args(std::move(args)) {}
 
   /// Copy constructor -- the callable and arguments are copied.
   /// \param[in]  other   The other wrapper to copy.
-  DeviceHost CallableWrapper(const CallableWrapper& other)
+  VoxxDeviceHost CallableWrapper(const CallableWrapper& other)
   : CallableObj(other.CallableObj), WrappedArgsType(other.Args) {}
 
   /// Move constructor -- moves the \p other's callable and arguments.
   /// \param[in]  other   The other wrapper to copy.
-  DeviceHost CallableWrapper(CallableWrapper&& other) noexcept
+  VoxxDeviceHost CallableWrapper(CallableWrapper&& other) noexcept
   : CallableObj(std::move(other.CallableObj)), Args(std::move(other.Args)) {}
 
   //==--- Operator overloads -----------------------------------------------==//
   
   /// Copy assignment -- deleted.
-  DeviceHost CallableWrapper& operator=(const CallableWrapper&) = delete;
+  VoxxDeviceHost CallableWrapper& operator=(const CallableWrapper&) = delete;
   /// Move assignment -- deleted.
-  DeviceHost CallableWrapper& operator=(CallableWrapper&&)      = delete;
+  VoxxDeviceHost CallableWrapper& operator=(CallableWrapper&&)      = delete;
   
   /// Overload of the call operator to invoke the callable.
-  DeviceHost void operator()() {
+  VoxxDeviceHost void operator()() {
     Detail::invoke<void>(std::move(CallableObj), std::move(Args));
   }
 
@@ -77,4 +78,4 @@ struct CallableWrapper {
   WrappedArgsType Args;        //!< The arguments for the callable.
 };
 
-}
+} // namespace Voxx
