@@ -87,7 +87,7 @@ endfunction()
 #==--------------------------------------------------------------------------==#
 function(voxx_target_link_libraries VOXX_TARGET VOXX_LINK_LIBS)
   set(${VOXX_TARGET}_LINK_LIBS "${VOXX_LINK_LIBS} ${ARGN}"
-      CACHE FORCE "voxel link libraries: ${VOXX_TARGET}_LINK_LIBS" FROCE)
+      CACHE FORCE "voxel link libraries: ${VOXX_TARGET}_LINK_LIBS" FORCE)
 endfunction()
 
 #==--------------------------------------------------------------------------==#
@@ -138,15 +138,16 @@ function(voxx_create_all_targets)
     separate_arguments(TARGET_LIBRARY_DIRS)
   endif()
 
+  separate_arguments(VOXX_TARGET_LIST)
   foreach(VOXX_TARGET ${VOXX_TARGET_LIST})
     string(REGEX REPLACE " " "" VOXX_TARGET ${VOXX_TARGET})
     message("Creating Target -- ${VOXX_TARGET}")
 
     if (${VOXX_TARGET}_FLAGS)
-      separate_arguments(${${VOXX_TARGET}_FLAGS})
+      separate_arguments(${VOXX_TARGET}_FLAGS)
     endif()
     if (${VOXX_TARGET}_LINK_LIBS)
-      separate_arguments(${${VOXX_TARGET}_LINK_LIBS})
+      separate_arguments(${VOXX_TARGET}_LINK_LIBS)
     endif()
 
     # Compile object files for each of the dependencies
@@ -166,7 +167,7 @@ function(voxx_create_all_targets)
     separate_arguments(OBJECTS)
 
     # Compile object file for test file:
-    get_filename_component(TARGET_NAME ${${VOXX_TARGET}_FILE}} NAME_WE)
+    get_filename_component(TARGET_NAME ${${VOXX_TARGET}_FILE} NAME_WE)
     set(OBJECT ${TARGET_NAME}.o)
     add_custom_command(
       OUTPUT  ${TARGET_NAME}.o
@@ -189,7 +190,7 @@ function(voxx_create_all_targets)
               ${VOXX_GLOBAL_DEFINITIONS}
               -o ${VOXX_TARGET} ${OBJECT} ${OBJECTS}
               ${TARGET_LIBRARY_DIRS}
-              ${${VOXX_TARGET}_LIBS}
+              ${${VOXX_TARGET}_LINK_LIBS}
       DEPENDS ${OBJECT} ${OBJECTS})
 
     install(

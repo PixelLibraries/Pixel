@@ -4,6 +4,15 @@ include_directories(${CUDA_INCLUDE_DIRS} ${Voxel_SOURCE_DIR}/include)
 
 #==--- Libraries ------------------------------------------------------------==#
 
+add_library(Heterogeneous
+            ${Voxel_SOURCE_DIR}/src/Heterogeneous/HeteroException.cpp)
+install(TARGETS  Heterogeneous
+        EXPORT   VoxelLibs
+        ARCHIVE  DESTINATION lib
+        LIBRARY  DESTINATION lib
+        RUNTIME  DESTINATION bin)
+target_include_directories(Heterogeneous PUBLIC ${CMAKE_INSTALL_PREFIX}/include)
+
 add_library(SystemInfo ${Voxel_SOURCE_DIR}/src/System/SystemInfo.cpp)
 install(TARGETS  SystemInfo
         EXPORT   VoxelLibs

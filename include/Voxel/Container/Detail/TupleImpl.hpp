@@ -18,6 +18,8 @@
 #include <Voxel/Utility/Portability.hpp>
 #include <utility>
 
+#include <iostream>
+
 namespace Voxx   {
 namespace Detail {
 
@@ -44,6 +46,25 @@ struct Element {
 
 //==--- getImpl -----------------------------------------------------------==//
 
+/// This is a helper function which can be decltype'd to get the type of the
+/// element at Index in a tuple. It should never actually be called.
+/// \param[in]  element   The element to get the type of.
+/// \tparam     Index     The index of the element in the tuple.
+/// \tparam     Type      The type to extract from the element.
+template <size_t Index, typename Type>
+VoxxDeviceHost constexpr inline Type
+typeExtractor(Element<Index, Type> element) noexcept { return Type{}; }
+
+/// Gets a constant lvalue-reference to an Element.
+/// \param[in] element The element to get.
+/// \tparam    Index   The index of the element to get.
+/// \tparam    Type    The type of the element to get.
+template <size_t Index, typename Type> 
+VoxxDeviceHost constexpr inline const Type&&
+getImpl(const Element<Index, Type>&& element) noexcept {
+  return element.value;
+}
+
 /// Gets a constant lvalue-reference to an Element.
 /// \param[in] element The element to get.
 /// \tparam    Index   The index of the element to get.
@@ -59,7 +80,7 @@ getImpl(const Element<Index, Type>& element) noexcept {
 /// \tparam    Index   The index of the element to get.
 /// \tparam    Type    The type of the element to get.
 template <size_t Index, typename Type> 
-VoxxDeviceHost constexpr inline Type&
+VoxxDeviceHost constexpr inline std::remove_reference_t<Type>&
 getImpl(Element<Index, Type>& element) noexcept {
   return element.value;
 }
@@ -69,12 +90,12 @@ getImpl(Element<Index, Type>& element) noexcept {
 /// \tparam    Index   The index of the element to get.
 /// \tparam    Type    The type of the element to get.
 template <size_t Index, typename Type> 
-VoxxDeviceHost constexpr inline Type&&
+VoxxDeviceHost constexpr inline std::remove_reference_t<Type>&&
 getImpl(Element<Index, Type>&& element) noexcept {
   return std::move(element.value);
 }
 
-/// Gets a constant lvalue-reference to an Element.
+/// Gets a constant volatile lvalue-reference to an Element.
 /// \param[in] element The element to get.
 /// \tparam    Index   The index of the element to get.
 /// \tparam    Type    The type of the element to get.
@@ -84,7 +105,17 @@ getImpl(const volatile Element<Index, Type>& element) noexcept {
   return element.value;
 }
 
-/// Gets an lvalue-reference to an Element.
+/// Gets a constant volatile rvalue-reference to an Element.
+/// \param[in] element The element to get.
+/// \tparam    Index   The index of the element to get.
+/// \tparam    Type    The type of the element to get.
+template <size_t Index, typename Type> 
+VoxxDeviceHost constexpr inline const volatile Type&&
+getImpl(const volatile Element<Index, Type>&& element) noexcept {
+  return element.value;
+}
+
+/// Gets a volatile lvalue-reference to an Element.
 /// \param[in] element The element to get.
 /// \tparam    Index   The index of the element to get.
 /// \tparam    Type    The type of the element to get.
@@ -94,7 +125,7 @@ getImpl(volatile Element<Index, Type>& element) noexcept {
   return element.value;
 }
 
-/// Gets an rvalue-reference to an Element.
+/// Gets a volatile rvalue-reference to an Element.
 /// \param[in] element The element to get.
 /// \tparam    Index   The index of the element to get.
 /// \tparam    Type    The type of the element to get.

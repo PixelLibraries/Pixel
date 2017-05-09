@@ -17,6 +17,7 @@
 
 #include "Portability.hpp"
 #include <exception>
+#include <string>
 
 // Include relevant headers:
 #if !defined(NDEBUG)
@@ -59,8 +60,8 @@ namespace Voxx {
 /// \param[in] line    The line in the file where the error was detected.
 inline void checkCudaError(cudaError_t code, const char* file, int line) {
   if (code != cudaSuccess)  {
-    printf("Terninated (Cuda Error):");
-    printf("\n\tError : %s\n\tFile  : %s\n\tLine  :%-7i\n\n",
+    printf("\nTerninated (Cuda Error):");
+    printf("\n\tError : %s\n\tFile  : %s\n\tLine  : %-7i\n\n",
            cudaGetErrorString(code), file, line);
     std::terminate();
    }

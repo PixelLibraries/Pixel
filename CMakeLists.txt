@@ -25,14 +25,17 @@ endif()
 
 set(CMAKE_CXX_COMPILER clang++)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${Voxel_SOURCE_DIR}/cmake)
+include(VoxelAddExecutable)
 
 #==--- Packages -------------------------------------------------------------==#
 
 find_package(CUDA)
 if(CUDA_FOUND)
-  add_definitions(-DVoxxCudaSupported)
-  set(CXX_CUDA_FLAGS -Xcuda-ptxas -v -cuda-path=${CUDA_TOOLKIT_ROOT_DIR}
-                     --cuda-gpu-arch=sm_61)
+  set(VOXX_DEFINITIONS -DVoxxCudaSupported)
+  set(CXX_CUDA_FLAGS "-expt-extended-lambda --cuda-gpu-arch=sm_61"           )
+  set(CXX_CUDA_FLAGS "${CXX_CUDA_FLAGS} --cuda-path=${CUDA_TOOLKIT_ROOT_DIR}")
+  set(CXX_CUDA_FLAGS "${CXX_CUDA_FLAGS} -Xcuda-ptxas -v"                     )
+
   if(APPLE)
     set(CUDA_LIBRARY_DIRS ${CUDA_TOOLKIT_ROOT_DIR}/lib)
     set(CUDA_LIBS  -lcudart_static -ldl -pthread      )
@@ -48,8 +51,8 @@ if(WIN32)
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2")
   set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} /O2"  )
 else()
-  set(FLAGS        "-std=c++1z -O3"                                     )
-  set(DEBUG_FLAGS  "${FLAGS} -Wall -Wextra -Wpedantic ${CXX_CUDA_FLAGS}")
+  set(FLAGS        "-std=c++1z -O3 ${CXX_CUDA_FLAGS}"                   )
+  set(DEBUG_FLAGS  "-Wall -Wextra -Wpedantic ${FLAGS}"                  )
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${FLAGS}"     )
   set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} ${DEBUG_FLAGS}" )
 endif()
@@ -74,6 +77,8 @@ add_subdirectory(apps)
 add_subdirectory(docs)
 add_subdirectory(src)
 add_subdirectory(tests)
+
+voxx_create_all_targets()
 
 #==--- Install --------------------------------------------------------------==#
 

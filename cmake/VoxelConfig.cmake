@@ -51,10 +51,10 @@ set(Voxel_INCLUDE_DIRS ${Voxel_INCLUDE_DIRS}
                        ${CMAKE_CURRENT_LIST_DIR}/../../../include)
 set(Voxel_LIBRARY_DIRS ${Voxel_LIBRARY_DIRS}
                        ${CMAKE_CURRENT_LIST_DIR}/../../../lib)
-set(Voxel_LIBRARYS     "${Voxel_LIBRARYS} -lSystemInfo -lThread")
+set(Voxel_LIBRARYS     "${Voxel_LIBRARYS} -lHeterogeneous -lSystemInfo -lThread")
 set(Voxel_DEFINITIONS  "${Voxel_DEFINITIONS} -std=c++1z -O3")
 
-set(SupportedComponents SystemInfo Thread)
+set(SupportedComponents Heterogeneous SystemInfo Thread)
 
 set(Voxel_FOUND True)
 

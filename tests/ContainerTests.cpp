@@ -28,7 +28,6 @@ TEST(TupleTests, CanCreateTupleWithConstructor) {
   EXPECT_EQ(get<2>(tuple)            , "test");
 }
 
-
 TEST(TupleTests, CanCopyConstructTuples) {
   auto       tuple1 = make_tuple(4, 3.5, "some value");
   const auto tuple2 = make_tuple(4, 3.5, "some value");
@@ -202,22 +201,34 @@ TEST(TupleTests, AtWrapperCanSetElements) {
   EXPECT_EQ(tuple.at<2>(), "another value");
 }
 
-template <std::size_t I, typename TupleType>
-using TupElemT = typename tuple_element<I, TupleType>::type;
-
 TEST(TupleTests, TupleElementWorks) {
   Tuple<int, float, double, std::string> tuple(4, 3.5f, 4.0, "test");
 
-  bool same1 = std::is_same<TupElemT<0, decltype(tuple)>, int&&>::value;
-  bool same2 = std::is_same<TupElemT<1, decltype(tuple)>, float&&>::value;
-  bool same3 = std::is_same<TupElemT<2, decltype(tuple)>, double&&>::value;
-  bool same4 = std::is_same<TupElemT<3, decltype(tuple)>, std::string&&>::value;
+  using Tup = decltype(tuple);
+  bool res1 = std::is_same<tuple_element_t<0, Tup>, int>::value;
+  bool res2 = std::is_same<tuple_element_t<1, Tup>, float>::value;
+  bool res3 = std::is_same<tuple_element_t<2, Tup>, double>::value;
+  bool res4 = std::is_same<tuple_element_t<3, Tup>, std::string>::value;
 
-  EXPECT_TRUE(same1);
-  EXPECT_TRUE(same2);
-  EXPECT_TRUE(same3);
-  EXPECT_TRUE(same4);
+  EXPECT_TRUE(res1);
+  EXPECT_TRUE(res2);
+  EXPECT_TRUE(res3);
+  EXPECT_TRUE(res4);
 }
+
+TEST(TupleTests, TupleGetHasCorrectTypes) {
+  Tuple<int, float, double, std::string>       tuple1(4, 3.5f, 4.0, "test");
+  const Tuple<int, float, double, std::string> tuple2(4, 3.5f, 4.0, "test");
+
+  bool res1 = std::is_same<decltype(get<0>(tuple1)), int&>::value;
+  bool res2 = std::is_same<decltype(get<1>(std::move(tuple1))), float&&>::value;
+  bool res3 = std::is_same<decltype(get<2>(tuple2)), const double&>::value;
+
+  EXPECT_TRUE(res1);
+  EXPECT_TRUE(res2);
+  EXPECT_TRUE(res3);
+}
+
 
 TEST(TupleTests, CanCreateReferenceContainer) {
   int x = 0; float y = 0.0f;
@@ -228,6 +239,7 @@ TEST(TupleTests, CanCreateReferenceContainer) {
   EXPECT_EQ(tuple.at<0>(), 0   );
   EXPECT_EQ(tuple.at<1>(), 0.0f);
 
+  // Test that it works for both get and at:
   get<0>(tuple) = 4;
   tuple.at<1>() = 3.5f;
 
