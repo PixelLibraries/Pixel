@@ -39,11 +39,11 @@ if (CUDA_FOUND)
   # Change this to find SM version.
   set(Voxel_DEFINITIONS  -DVoxxCudaSupported
                          --cuda-path=${CUDA_TOOLKIT_ROOT_DIR}
+                         -expt-extended-lambda
                          --cuda-gpu-arch=sm_61)
   set(Voxel_LIBRARY_DIRS ${CUDA_LIBRARY_DIRS})
   set(Voxel_LIBRARYS     ${CUDA_LIBS})
   set(Voxel_LIBS         ${CUDA_LIBS})
-
 endif()
 
 # Define the include directories:

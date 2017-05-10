@@ -137,38 +137,6 @@ struct Tuple {
     return Storage;
   }
 
-  //==--- Members ----------------------------------------------------------==//
-  
-  /// Returns the element at position Index.
-  /// \tparam   Index   The index of the element to get.
-  template <std::size_t Index>
-  VoxxDeviceHost constexpr decltype(auto) at() noexcept {
-    return Detail::getImpl<Index>(Storage);
-  }
-
-  /// Returns the element at position Index.
-  /// \tparam   Index   The index of the element to get.
-  template <std::size_t Index>
-  VoxxDeviceHost constexpr decltype(auto) at() const noexcept {
-    return Detail::getImpl<Index>(Storage);
-  }
-
-  /// Returns the element at position Index. This overload is selected for a
-  /// volatile tuple.
-  /// \tparam   Index   The index of the element to get.
-  template <std::size_t Index>
-  VoxxDeviceHost constexpr decltype(auto) at() volatile noexcept {
-    return Detail::getImpl<Index>(Storage);
-  }
-
-  /// Returns the element at position Index. This overload is selected for a
-  /// volatile tuple.
-  /// \tparam   Index   The index of the element to get.
-  template <std::size_t Index>
-  VoxxDeviceHost constexpr decltype(auto) at() const volatile noexcept {
-    return Detail::getImpl<Index>(Storage);
-  }
-
  private:
   StorageType Storage; //!< Storage of the Tuple elements.
 
@@ -200,6 +168,8 @@ struct tuple_element {
     Detail::typeExtractor<Idx>(std::move(std::declval<TupleType>().data())));
 };
 
+/// Returns the type of a tuple element for a tuple with no elements,
+/// \tparam  Idx The index of the element to get the type of.
 template <std::size_t Idx>
 struct tuple_element<Idx, Tuple<>> {
   using type = void;
@@ -273,7 +243,7 @@ get(Tuple<Types...>&& tuple) noexcept {
 /// \tparam    Idx   The index of the element to get from the Tuple.
 /// \tparam    Types The types of the Tuple elements.
 template <size_t Idx, typename... Types>
-VoxxDeviceHost constexpr inline const tuple_element_t<Idx, Tuple<Types...>>&
+VoxxDeviceHost constexpr inline decltype(auto)
 get(const volatile Tuple<Types...>& tuple) noexcept {
   return Detail::getImpl<Idx>(tuple.data());
 }
@@ -284,7 +254,7 @@ get(const volatile Tuple<Types...>& tuple) noexcept {
 /// \tparam    Idx   The index of the element to get from the Tuple.
 /// \tparam    Types The types of the Tuple elements.
 template <size_t Idx, typename... Types>
-VoxxDeviceHost constexpr inline tuple_element_t<Idx, Tuple<Types...>>&
+VoxxDeviceHost constexpr inline decltype(auto)
 get(volatile Tuple<Types...>& tuple) noexcept {
   return Detail::getImpl<Idx>(tuple.data());
 }
@@ -295,10 +265,9 @@ get(volatile Tuple<Types...>& tuple) noexcept {
 /// \tparam    Idx   The index of the element to get from the Tuple.
 /// \tparam    Types The types of the Tuple elements.
 template <size_t Idx, typename... Types>
-VoxxDeviceHost constexpr inline tuple_element_t<Idx, Tuple<Types...>>&&
+VoxxDeviceHost constexpr inline decltype(auto)
 get(volatile Tuple<Types...>&& tuple) noexcept {
-  using StorageType = decltype(tuple.data());
-  return Detail::getImpl<Idx>(std::forward<StorageType>(tuple.data()));
+  return Detail::getImpl<Idx>(std::move(tuple.data()));
 }
 
 //==--- Functions ----------------------------------------------------------==//
@@ -340,7 +309,7 @@ get(volatile Tuple<Types...>&& tuple) noexcept {
 template <typename... Types>
 VoxxDeviceHost constexpr inline decltype(auto)
 make_tuple(Types&&... params) noexcept {
-  return Tuple<std::decay_t<Types>...>{std::forward<Types>(params)...};
+  return Tuple<Types...>{std::forward<Types>(params)...};
 }
 
 } // namespace Voxx

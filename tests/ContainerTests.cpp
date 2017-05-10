@@ -177,28 +177,25 @@ TEST(TupleTests, CanDeduceTupleTypeWithMakeTuple) {
   EXPECT_EQ(get<2>(tuple)            , "some value");
 }
 
-TEST(TupleTests, AtWrapperCanAccessElements) {
+TEST(TupleTests, CanAccessElements) {
   auto tuple = make_tuple(4, 3.5, "some value");
 
-  EXPECT_EQ(tuple.at<0>(), 4           );
-  EXPECT_EQ(tuple.at<1>(), 3.5         );
-  EXPECT_EQ(tuple.at<2>(), "some value");
+  EXPECT_EQ(get<0>(tuple), 4           );
+  EXPECT_EQ(get<1>(tuple), 3.5         );
+  EXPECT_EQ(get<2>(tuple), "some value");
 }
 
-TEST(TupleTests, AtWrapperCanSetElements) {
-  volatile auto tuple = make_tuple(4, 3.5, "some value");
+TEST(TupleTests, CanSetElements) {
+  volatile auto tuple = make_tuple(4, 3.5);
 
-  EXPECT_EQ(tuple.at<0>(), 4           );
-  EXPECT_EQ(tuple.at<1>(), 3.5         );
-  EXPECT_EQ(tuple.at<2>(), "some value");
+  EXPECT_EQ(get<0>(tuple), 4  );
+  EXPECT_EQ(get<1>(tuple), 3.5 );
 
-  tuple.at<0>() = 7;
-  tuple.at<1>() = 14.4;
-  tuple.at<2>() = "another value";
+  get<0>(tuple) = 7;
+  get<1>(tuple) = 14.4;
 
-  EXPECT_EQ(tuple.at<0>(), 7              );
-  EXPECT_EQ(tuple.at<1>(), 14.4           );
-  EXPECT_EQ(tuple.at<2>(), "another value");
+  EXPECT_EQ(get<0>(tuple), 7   );
+  EXPECT_EQ(get<1>(tuple), 14.4);
 }
 
 TEST(TupleTests, TupleElementWorks) {
@@ -236,23 +233,22 @@ TEST(TupleTests, CanCreateReferenceContainer) {
 
   EXPECT_EQ(x            , 0   );
   EXPECT_EQ(y            , 0.0f);
-  EXPECT_EQ(tuple.at<0>(), 0   );
-  EXPECT_EQ(tuple.at<1>(), 0.0f);
+  EXPECT_EQ(get<0>(tuple), 0   );
+  EXPECT_EQ(get<1>(tuple), 0.0f);
 
-  // Test that it works for both get and at:
   get<0>(tuple) = 4;
-  tuple.at<1>() = 3.5f;
+  get<1>(tuple) = 3.5f;
 
   EXPECT_EQ(x            , 4   );
   EXPECT_EQ(y            , 3.5f);
-  EXPECT_EQ(tuple.at<0>(), 4   );
-  EXPECT_EQ(tuple.at<1>(), 3.5f);
+  EXPECT_EQ(get<0>(tuple), 4   );
+  EXPECT_EQ(get<1>(tuple), 3.5f);
 
   x = 0; y = 0.0f;
   EXPECT_EQ(x            , 0   );
   EXPECT_EQ(y            , 0.0f);
-  EXPECT_EQ(tuple.at<0>(), 0   );
-  EXPECT_EQ(tuple.at<1>(), 0.0f);
+  EXPECT_EQ(get<0>(tuple), 0   );
+  EXPECT_EQ(get<1>(tuple), 0.0f);
 
 }
 
