@@ -27,7 +27,7 @@
 #
 # VOXX_DIRECTORIES        : A list of directories to include.
 #==--------------------------------------------------------------------------==#
-function(voxx_include_directories VOXX_DIRECTORIE)
+function(voxx_include_directories VOXX_DIRECTORIES)
   set(VOXX_INCLUDE_DIRS "${VOXX_DIRECTORIES} ${ARGN}"
       CACHE FORCE "voxx include directories" FORCE)
 endfunction()
@@ -53,6 +53,17 @@ endfunction()
 #==--------------------------------------------------------------------------==#
 function(voxx_library_directories VOXX_DIRECTORIES)
   set(VOXX_LIBRARY_DIRS "${VOXX_DIRECTORIES} ${ARGN}"
+      CACHE FORCE "voxel library directories" FORCE)
+endfunction()
+
+#==--------------------------------------------------------------------------==#
+# Description             : This function appends to the list of directories to
+#                           search for linking.
+#                           
+# VOXX_DIRECTORIES        : A list of directories to append to the current list.
+#==--------------------------------------------------------------------------==#
+function(voxx_library_directories_append VOXX_DIRECTORIES)
+  set(VOXX_LIBRARY_DIRS "${VOXX_LIBRARY_DIRS} ${VOXX_DIRECTORIES} ${ARGN}"
       CACHE FORCE "voxel library directories" FORCE)
 endfunction()
 
@@ -116,11 +127,17 @@ endfunction()
 #==--------------------------------------------------------------------------==#
 function(voxx_create_all_targets)
   # Append -I to all include directories.
+  if (VOXX_INCLUDE_DIRS)
+    separate_arguments(VOXX_INCLUDE_DIRS)
+  endif()
   foreach(ARG ${VOXX_INCLUDE_DIRS})
     set(TARGET_INCLUDE_DIRS "${TARGET_INCLUDE_DIRS} -I${ARG}")
   endforeach()
 
   # Append -L to all library directories
+  if(VOXX_LIBRARY_DIRS)
+    separate_arguments(VOXX_LIBRARY_DIRS)
+  endif()
   foreach(ARG ${VOXX_LIBRARY_DIRS})
     set(TARGET_LIBRARY_DIRS "${TARGET_LIBRARY_DIRS} -L${ARG}")
   endforeach()

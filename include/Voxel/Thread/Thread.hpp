@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "Detail/ThreadImpl.hpp"
+#include <Voxel/Bit/BitMask.hpp>
 #include <exception>
 #include <string>
 
@@ -27,8 +29,9 @@ class ThreadException : public std::exception {
  public:
   /// The Type enum defines the types of thread realted exceptions.
   enum class Type : uint8_t {
-    AffinitySetFailure  = 0x00,
-    AffinityGetFailure  = 0x01
+    AffinitySetFailure  = 0x00, //!< Failure when setting the affinity.
+    AffinityGetFailure  = 0x01, //!< Failure when getting the affinity.
+    Oversubscription    = 0x02  //!< More threads than cores.
   };
 
  public:
@@ -85,5 +88,13 @@ void setAffinity(std::size_t coreNumber) noexcept;
 /// Returns a bitmask representing which logical threads the currently executing
 /// thread may run on.
 BitMask getAffinity() noexcept;
+
+/// Emits a memeory barrier to prevent reordering of instructions. On systems
+/// with a strongly ordered memory model this is simply a compiler barrier,
+/// hoever, on systems with a weakly ordered memory model this will emit the
+/// appropriate instruction to ensure memory orderring.
+inline void memoryBarrier() noexcept {
+  VoxxMemoryBarrier();
+}
 
 }} // namespace Voxx::Thread

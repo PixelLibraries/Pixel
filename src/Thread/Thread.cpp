@@ -114,3 +114,10 @@ BitMask getAffinity() noexcept {
 }
 
 }} // namespace Voxx::Thread
+
+#if defined(VoxxCpuArchArm)
+
+// Implements the non-inlined function call which can act as a memory barrier.
+void fakeMemoryBarrier() noexcept {}
+
+#endif // VoxxCpuArchArm

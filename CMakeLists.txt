@@ -23,7 +23,7 @@ endif()
 
 #==--- Options --------------------------------------------------------------==#
 
-set(CMAKE_CXX_COMPILER clang++)
+set(CMAKE_CXX_COMPILER /usr/bin/clang++)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${Voxel_SOURCE_DIR}/cmake)
 include(VoxelAddExecutable)
 

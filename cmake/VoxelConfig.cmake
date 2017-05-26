@@ -42,17 +42,19 @@ if (CUDA_FOUND)
                          -expt-extended-lambda
                          --cuda-gpu-arch=sm_61)
   set(Voxel_LIBRARY_DIRS ${CUDA_LIBRARY_DIRS})
-  set(Voxel_LIBRARYS     ${CUDA_LIBS})
+  set(Voxel_LIBRARIES    ${CUDA_LIBS})
   set(Voxel_LIBS         ${CUDA_LIBS})
 endif()
+
+set(VOXX_LIBS "-lHeterogeneous -lSystemInfo -lThread")
+set(VOXX_LDIR "${CMAKE_CURRENT_LIST_DIR}/../../../lib")
 
 # Define the include directories:
 set(Voxel_INCLUDE_DIRS ${Voxel_INCLUDE_DIRS}
                        ${CMAKE_CURRENT_LIST_DIR}/../../../include)
-set(Voxel_LIBRARY_DIRS ${Voxel_LIBRARY_DIRS}
-                       ${CMAKE_CURRENT_LIST_DIR}/../../../lib)
-set(Voxel_LIBRARYS     "${Voxel_LIBRARYS} -lHeterogeneous -lSystemInfo -lThread")
-set(Voxel_DEFINITIONS  "${Voxel_DEFINITIONS} -std=c++1z -O3")
+set(Voxel_LIBRARY_DIRS "${Voxel_LIBRARY_DIRS} ${VOXX_LDIR}"      )
+set(Voxel_LIBRARIES    "${Voxel_LIBRARIES} ${VOXX_LIBS}"         )
+set(Voxel_DEFINITIONS  "${Voxel_DEFINITIONS} -std=c++1z -O3"     )
 
 set(SupportedComponents Heterogeneous SystemInfo Thread)
 
