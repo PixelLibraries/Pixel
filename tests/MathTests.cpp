@@ -16,19 +16,29 @@
 #include <Voxel/Math/Math.hpp>
 #include <gtest/gtest.h>
 
-using namespace Voxx::Math;
+using namespace Voxx;
 
 TEST(MathTests, PowerOfTwoTestCorrect) {
-  EXPECT_FALSE(isPowerOfTwo(0));
-  EXPECT_TRUE(isPowerOfTwo(1));
+  EXPECT_FALSE(Math::isPowerOfTwo(0));
+  EXPECT_TRUE(Math::isPowerOfTwo(1));
 
   for (std::size_t i = 1; i < sizeof(std::size_t) * 8; ++i) {
-    auto first  = isPowerOfTwo(1ull << i);
-    auto second = isPowerOfTwo((1ull << i) + 1);
+    auto first  = Math::isPowerOfTwo(1ull << i);
+    auto second = Math::isPowerOfTwo((1ull << i) + 1);
 
     EXPECT_TRUE(first);
     EXPECT_FALSE(second);
   }
+}
+
+TEST(MathTests, RandIntTestCorrect) {
+  auto random1 = Math::randint(0 , 100);
+  auto random2 = Math::randint(10, 1000);
+
+  EXPECT_GE(random1, 0   );
+  EXPECT_LE(random1, 100 );
+  EXPECT_GE(random2, 10  );
+  EXPECT_LE(random2, 1000);
 }
 
 int main(int argc, char** argv) {

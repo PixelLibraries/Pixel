@@ -28,6 +28,12 @@
 namespace Voxx   {
 namespace System {
 
+/// \todo change this to use the correct values by feeding in the value at
+/// compile time.
+static constexpr std::size_t destructiveInterfaceSize() noexcept {
+  return 64;
+}
+
 /// The CpuidRegisters struct wrap the eax, ebx, ecx, edx registers.
 struct CpuIdRegisters {
   uint32_t values[4]; //!< The values of the register data.
@@ -280,7 +286,7 @@ struct CacheInfo {
   uint32_t Sets;            //!< The number of sets in the cache.
 };
 
-/// The HardwareInfo struct defines the number of packages (or sockets), cores
+/// TheCpuInfo struct defines the number of packages (or sockets), cores
 /// (the number of hardware cores), and logical cores (the number of threads) in
 /// the system.
 struct CpuInfo {
@@ -297,6 +303,7 @@ struct CpuInfo {
   static void refresh();
 
   //==--- Properties -------------------------------------------------------==//
+
 
   /// Returns the number of physical cores.
   static uint32_t cores() noexcept {
@@ -402,13 +409,8 @@ struct CpuInfo {
   ///                   for.
   static uint32_t sharedCores(uint32_t level = 0);
 
-  /// Returns the number of 
-
   /// Prints all the cpu information.
   static void print();
-
-  /// Get a random index of a core which shares a cache level.
-  //uint32_t randSharedCore(uint32_t coreIndex) const;
 
  private:
   /// Forwarding reference constructor -- deleted by making it private to
