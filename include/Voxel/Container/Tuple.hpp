@@ -42,6 +42,32 @@ namespace Voxx {
 template <typename... Types>
 struct Tuple;
 
+//==--- Meta functions -----------------------------------------------------==//
+
+/// The IsTuple struct determines if a type is a Tuple. This is the default case
+/// which returns false.
+/// \tparam T   The type to check against tuple.
+template <typename T>
+struct IsTuple {
+  /// Returns that the type T is not a tuple.
+  static constexpr bool value = false;
+};
+
+/// Specialization of the IsTuple struct to return that a type is a Tuple.
+/// \tparam Ts  The types the tuple stores.
+template <typename... Ts>
+struct IsTuple<Tuple<Ts...>> {
+  /// Returns that the type is a tuple.
+  static constexpr bool value = true;
+};
+
+/// Returns true if a decayed T is a tuple, and false otherwise.
+template <typename T>
+static constexpr bool isTuple = 
+  IsTuple<std::decay_t<std::remove_reference_t<T>>>::value;
+
+//==--- Implementation -----------------------------------------------------==//
+
 /// Specialization for an empty Tuple.
 template <>
 struct Tuple<> {
@@ -139,7 +165,6 @@ struct Tuple {
 
  private:
   StorageType Storage; //!< Storage of the Tuple elements.
-
 
   /// This overload of the constructor is called by the copy and move
   /// constructores to get the elements of the \p other Tuple and copy or move

@@ -54,7 +54,7 @@ class Callable {
   /// \param[in]  callable  The callable object to wrap.
   /// \param[in]  args      The arguments for the callable.
   VoxxDeviceHost
-  Callable(CallableType&& callable, Args&&... args)
+  Callable(CallableType&& callable, Args&&... args) noexcept
   : WrappedArgs{WrappedArgsType{std::forward<Args>(args)...}},
     CallableObj{std::move(callable)}                         {}
 
@@ -65,12 +65,12 @@ class Callable {
   /// \param[in]  callable  The callable object to wrap.
   /// \param[in]  args      The arguments for the callable.    
   VoxxDeviceHost
-  Callable(CallableType&& callable, WrappedArgsType&& args)
+  Callable(CallableType&& callable, WrappedArgsType&& args) noexcept
   : WrappedArgs{std::move(args)}, CallableObj(std::move(callable)) {}
 
   /// Copy constructor -- the callable and arguments are copied.
   /// \param[in]  other   The other wrapper to copy.
-  VoxxDeviceHost Callable(const Callable& other)
+  VoxxDeviceHost Callable(const Callable& other) noexcept
   : WrappedArgs{other.WrappedArgs}, CallableObj{other.CallableObj} {}
 
   /// Move constructor -- moves the \p other's callable and arguments.

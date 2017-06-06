@@ -435,7 +435,7 @@ struct CpuInfo {
   /// The number of CPU packages in the system.
   static thread_local std::size_t          Packages;
   /// The number of physical cores in the system.
-  static thread_local std::size_t          PhysicalCores;
+  static std::size_t          PhysicalCores;
   /// The index of the first level of cache shared by physical cpus.
   static thread_local std::size_t          CoreSharingLevel;
 

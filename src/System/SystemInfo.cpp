@@ -45,7 +45,7 @@ thread_local CpuIdRegisters                CpuInfo::BasicFeatures;
 thread_local CpuIdRegisters                CpuInfo::ExtendedFeatures;
 thread_local TopologyMasks                 CpuInfo::Masks;
 thread_local std::size_t                   CpuInfo::Packages(0);
-thread_local std::size_t                   CpuInfo::PhysicalCores(0);
+std::size_t                                CpuInfo::PhysicalCores(0);
 thread_local std::size_t                   CpuInfo::CoreSharingLevel(0);  
 
 //==--- TopologyMasks ------------------------------------------------------==//
