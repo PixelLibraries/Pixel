@@ -202,7 +202,9 @@ forEach(const Tuple<Ts...>&& tuple, Functor&& functor, Args&&... args) {
 //==--- forEach for general containers -------------------------------------==//
 
 /// Imlementation of forEach for containers, this overload is only enabled if
-/// the container is not a Tuple.
+/// the container is not a Tuple. Benchmarking shows that this is faster than
+/// both manually unrolling a the functor over a loop, and std::for_each.
+/// 
 /// \param[in]  container   The container to apply forEach to.
 /// \param[in]  callable    The callable to call on the container.
 /// \param[in]  args        The arguments for the callable.

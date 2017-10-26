@@ -23,16 +23,18 @@ voxx_add_executable(FunctionTests
                     ${Voxel_SOURCE_DIR}/src/Heterogeneous/HeteroException.cpp)
 voxx_target_link_libraries(FunctionTests ${GTEST_BOTH_LIBRARIES} ${CUDA_LIBS})
 
-voxx_add_executable(MathTests
-                    ${Voxel_SOURCE_DIR}/tests/MathTests.cpp)
-voxx_target_link_libraries(MathTests ${GTEST_BOTH_LIBRARIES} ${CUDA_LIBS})
-
 voxx_add_executable(HeterogeneousTests
                     ${Voxel_SOURCE_DIR}/tests/HeterogeneousTests.cu
                     ${Voxel_SOURCE_DIR}/src/Heterogeneous/HeteroException.cpp)
 voxx_target_link_libraries(HeterogeneousTests
                            ${GTEST_BOTH_LIBRARIES}
                            ${CUDA_LIBS})
+
+voxx_add_executable(MathTests ${Voxel_SOURCE_DIR}/tests/MathTests.cpp)
+voxx_target_link_libraries(MathTests ${GTEST_BOTH_LIBRARIES} ${CUDA_LIBS})
+
+voxx_add_executable(IteratorTests ${Voxel_SOURCE_DIR}/tests/IteratorTests.cpp)
+voxx_target_link_libraries(IteratorTests ${GTEST_BOTH_LIBRARIES} ${CUDA_LIBS})
 
 #==--- Benchmarks -----------------------------------------------------------==#
 
@@ -51,5 +53,5 @@ if (benchmark_FOUND)
                       ${Voxel_SOURCE_DIR}/tests/AlgorithmBenchmarks.cpp)
   voxx_target_link_libraries(AlgorithmBenchmarks
                              ${Voxel_LIBRARIES}
-                             ${benchmark_LIBRARIES})
+                             ${benchmark_LIBRARIES} -lc++abi)
 endif(benchmark_FOUND)

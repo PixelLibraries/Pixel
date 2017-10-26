@@ -38,9 +38,7 @@ if (CUDA_FOUND)
 
   # Change this to find SM version.
   set(Voxel_DEFINITIONS  -DVoxxCudaSupported
-                         --cuda-path=${CUDA_TOOLKIT_ROOT_DIR}
-                         -expt-extended-lambda
-                         --cuda-gpu-arch=sm_61)
+                         --cuda-path=${CUDA_TOOLKIT_ROOT_DIR})
   set(Voxel_LIBRARY_DIRS ${CUDA_LIBRARY_DIRS})
   set(Voxel_LIBRARIES    ${CUDA_LIBS})
   set(Voxel_LIBS         ${CUDA_LIBS})
@@ -51,10 +49,10 @@ set(VOXX_LDIR "${CMAKE_CURRENT_LIST_DIR}/../../../lib")
 
 # Define the include directories:
 set(Voxel_INCLUDE_DIRS ${Voxel_INCLUDE_DIRS}
-                       ${CMAKE_CURRENT_LIST_DIR}/../../../include)
-set(Voxel_LIBRARY_DIRS "${Voxel_LIBRARY_DIRS} ${VOXX_LDIR}"      )
-set(Voxel_LIBRARIES    "${Voxel_LIBRARIES} ${VOXX_LIBS}"         )
-set(Voxel_DEFINITIONS  "${Voxel_DEFINITIONS} -std=c++1z -O3"     )
+                       ${CMAKE_CURRENT_LIST_DIR}/../../../include      )
+set(Voxel_LIBRARY_DIRS "${Voxel_LIBRARY_DIRS} ${VOXX_LDIR}"            )
+set(Voxel_LIBRARIES    "${Voxel_LIBRARIES} ${VOXX_LIBS}"               )
+set(Voxel_DEFINITIONS  "${Voxel_DEFINITIONS} -std=c++17 -stdlib=libc++")
 
 set(SupportedComponents Heterogeneous SystemInfo Thread)
 

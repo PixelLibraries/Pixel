@@ -23,18 +23,27 @@ endif()
 
 #==--- Options --------------------------------------------------------------==#
 
-set(CMAKE_CXX_COMPILER /usr/bin/clang++)
+set(CMAKE_CXX_COMPILER clang++)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${Voxel_SOURCE_DIR}/cmake)
 include(VoxelAddExecutable)
+
+set(CMAKE_CXX_COMPILER clang++)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${Conky_SOURCE_DIR}/cmake)
+
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+  # Check that version supports c++17
+else()
+  message("ERROR: Unsupported compiler!")
+endif()
 
 #==--- Packages -------------------------------------------------------------==#
 
 find_package(CUDA)
 if(CUDA_FOUND)
   set(VOXX_DEFINITIONS -DVoxxCudaSupported)
-  set(CXX_CUDA_FLAGS "-expt-extended-lambda --cuda-gpu-arch=sm_61"           )
+  set(CXX_CUDA_FLAGS "--cuda-gpu-arch=sm_61"                                 )
   set(CXX_CUDA_FLAGS "${CXX_CUDA_FLAGS} --cuda-path=${CUDA_TOOLKIT_ROOT_DIR}")
-  set(CXX_CUDA_FLAGS "${CXX_CUDA_FLAGS} -Xcuda-ptxas -v"                     )
+  #set(CXX_CUDA_FLAGS "${CXX_CUDA_FLAGS} -Xcuda-ptxas -v"                     )
 
   if(APPLE)
     set(CUDA_LIBRARY_DIRS ${CUDA_TOOLKIT_ROOT_DIR}/lib)
@@ -51,7 +60,7 @@ if(WIN32)
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2")
   set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} /O2"  )
 else()
-  set(FLAGS        "-std=c++1z -O3 ${CXX_CUDA_FLAGS}"                   )
+  set(FLAGS        "-std=c++17 -O3 -stdlib=libc++ ${CXX_CUDA_FLAGS}"    )
   set(DEBUG_FLAGS  "-Wall -Wextra -Wpedantic ${FLAGS}"                  )
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${FLAGS}"     )
   set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} ${DEBUG_FLAGS}" )

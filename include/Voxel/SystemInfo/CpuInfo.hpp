@@ -30,7 +30,7 @@ namespace System {
 
 /// \todo change this to use the correct values by feeding in the value at
 /// compile time.
-static constexpr std::size_t destructiveInterfaceSize() noexcept {
+static constexpr std::size_t destructiveInterferenceSize() noexcept {
   return 64;
 }
 
