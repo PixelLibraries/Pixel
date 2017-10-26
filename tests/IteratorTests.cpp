@@ -15,6 +15,7 @@
 
 #include <Voxel/Iterator/Iterators.hpp>
 #include <gtest/gtest.h>
+#include <cmath>
 #include <string>
 
 using namespace Voxx;
@@ -55,6 +56,29 @@ TEST(RangeTests, CanCreateDoublePrecisionRange) {
     EXPECT_EQ(i, value);
     value += 0.2;
   }
+}
+
+TEST(RangeTests, CanDetermineSizeOfIntegralRange) {
+  auto r = range(0, 10);
+  EXPECT_EQ(r.size(), 10);
+  auto rr = range(2, 7, 3);
+  EXPECT_EQ(rr.size(), 1);
+}
+
+TEST(RangeTests, CanDetermineSizeOfFloatingPointRange) {
+  auto rf = range(0.1f, 0.72f, 0.1f);
+  EXPECT_EQ(rf.size(), 6);
+
+  auto rff = range(0.1f, 0.765f, 0.1f);
+  EXPECT_EQ(rff.size(), 6);
+}
+
+TEST(RangeTests, CanDetermineDivisibilityOfRange) {
+  auto rf = range(0.1f, 0.72f, 0.1f);
+  EXPECT_EQ(rf.size()        , 6    );
+  EXPECT_EQ(rf.isDivisible() , true );
+  EXPECT_EQ(rf.isDivisible(3), true );
+  EXPECT_EQ(rf.isDivisible(4), false);
 }
 
 int main(int argc, char** argv) {

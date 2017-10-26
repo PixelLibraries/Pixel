@@ -18,6 +18,7 @@
 #define VOXX_ITERATOR_RANGE_HPP
 
 #include <Voxel/Utility/Portability.hpp>
+#include <cmath>
 #include <type_traits>
 
 namespace Voxx {
@@ -55,6 +56,13 @@ namespace Voxx {
 template <typename T>
 class Range {
  private:
+  //==--- Contants ---------------------------------------------------------==//
+  
+  /// Defines if the type of the Range is a floating point type.
+  static constexpr auto isFloatingPoint = std::is_floating_point_v<T>;
+
+  //==--- Classes ----------------------------------------------------------==//
+  
   /// The Iterator class defines an iterator for iterating over a range.
   /// \tparam IsConst   If the iterator is constant.
   template <bool IsConst>
@@ -138,6 +146,8 @@ class Range {
   VoxxDeviceHost Range(T min, T max, T step)
   : Min(min), Max(max), Step(step) {}
 
+  //==--- Methods ----------------------------------------------------------==//
+
   /// Gets a non constant iterator to the beginning of the range.
   VoxxDeviceHost decltype(auto) begin() {
     return NonConstIterator(Min, Step);
@@ -156,6 +166,26 @@ class Range {
   /// Gets a non constant iterator to the end of the range.
   VoxxDeviceHost decltype(auto) end() const {
    return ConstIterator(Max, Step);   
+  }
+
+  /// Returns the size (number of elements) in the range. This method is not
+  /// high performance for non integral ranges since ensuring correctness is
+  /// difficult due to precision errors. If an incorrect case is found, please
+  /// add a test case to the test suite.
+  /// 
+  /// For integral types the performance is much better.
+  VoxxDeviceHost std::size_t size() const noexcept {
+    const auto result = (Max - Min) / Step;
+    if constexpr (isFloatingPoint) {
+      return std::fmod(Max - Min, Step) > Step * 0.5f
+        ? std::floor(result) : std::nearbyint(result);
+    }
+    return result;
+  }
+
+  /// Returns true if the range is divisible into \p parts parts.
+  VoxxDeviceHost bool isDivisible(std::size_t parts = 2) const {
+    return (size() % parts) == 0;
   }
 
   T Min;  //!< The minimum value in the range.
